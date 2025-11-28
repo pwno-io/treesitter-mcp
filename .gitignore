@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+check_ts.py
+check_ts_cursor.py
+reproduce_issue.py
+test_advanced.c
+test_deps.py
+test_parsing.py
+
+# Lock files (optional - some prefer to commit these)
+uv.lock
+
+# OS
+.DS_Store
+Thumbs.db
