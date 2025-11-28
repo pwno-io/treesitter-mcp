@@ -44,11 +44,11 @@ def treesitter_analyze_file(file_path: str) -> Any:
     Note: This function does not return the full AST to avoid serialization issues.
     Use treesitter_get_ast() if you need the complete AST.
     """
-    print(f"[TOOL CALL] treesitter_analyze_file(file_path={file_path})", file=sys.stderr)
+
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
-        print(f"[TOOL RETURN] treesitter_analyze_file -> {type(result)}: {result}", file=sys.stderr)
+
         return result
     
     try:
@@ -61,11 +61,11 @@ def treesitter_analyze_file(file_path: str) -> Any:
         # Remove the AST to avoid protobuf serialization issues with large files
         result_dict.pop('ast', None)
         
-        print(f"[TOOL RETURN] treesitter_analyze_file -> {type(result_dict)}: keys={list(result_dict.keys())}", file=sys.stderr)
+
         return result_dict
     except Exception as e:
         result = {"error": f"Error analyzing file: {str(e)}"}
-        print(f"[TOOL RETURN] treesitter_analyze_file -> {type(result)}: {result}", file=sys.stderr)
+
         return result
 
 @mcp.tool()
@@ -82,11 +82,11 @@ def treesitter_get_call_graph(file_path: str) -> Any:
           - location: Source location (start/end points)
           - calls: List of function names called by this function
     """
-    print(f"[TOOL CALL] treesitter_get_call_graph(file_path={file_path})", file=sys.stderr)
+
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
-        print(f"[TOOL RETURN] treesitter_get_call_graph -> {type(result)}: {result}", file=sys.stderr)
+
         return result
         
     try:
@@ -97,15 +97,15 @@ def treesitter_get_call_graph(file_path: str) -> Any:
         if hasattr(analyzer, 'get_call_graph'):
             result = analyzer.get_call_graph(tree.root_node, file_path)
             result_dict = result.model_dump()
-            print(f"[TOOL RETURN] treesitter_get_call_graph -> {type(result_dict)}: keys={list(result_dict.keys())}", file=sys.stderr)
+
             return result_dict
         else:
             result = {"error": "Call graph not supported for this language"}
-            print(f"[TOOL RETURN] treesitter_get_call_graph -> {type(result)}: {result}", file=sys.stderr)
+
             return result
     except Exception as e:
         result = {"error": f"Error generating call graph: {str(e)}"}
-        print(f"[TOOL RETURN] treesitter_get_call_graph -> {type(result)}: {result}", file=sys.stderr)
+
         return result
 
 @mcp.tool()
@@ -121,11 +121,11 @@ def treesitter_find_function(file_path: str, name: str) -> Any:
         - query: The search query (function name)
         - matches: List of Symbol objects representing matching function definitions
     """
-    print(f"[TOOL CALL] treesitter_find_function(file_path={file_path}, name={name})", file=sys.stderr)
+
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
-        print(f"[TOOL RETURN] treesitter_find_function -> {type(result)}: {result}", file=sys.stderr)
+
         return result
         
     try:
@@ -136,15 +136,15 @@ def treesitter_find_function(file_path: str, name: str) -> Any:
         if hasattr(analyzer, 'find_function'):
             result = analyzer.find_function(tree.root_node, file_path, name)
             result_dict = result.model_dump()
-            print(f"[TOOL RETURN] treesitter_find_function -> {type(result_dict)}: keys={list(result_dict.keys())}", file=sys.stderr)
+
             return result_dict
         else:
             result = {"error": "Function search not supported for this language"}
-            print(f"[TOOL RETURN] treesitter_find_function -> {type(result)}: {result}", file=sys.stderr)
+
             return result
     except Exception as e:
         result = {"error": f"Error finding function: {str(e)}"}
-        print(f"[TOOL RETURN] treesitter_find_function -> {type(result)}: {result}", file=sys.stderr)
+
         return result
 
 @mcp.tool()
@@ -160,11 +160,11 @@ def treesitter_find_variable(file_path: str, name: str) -> Any:
         - query: The search query (variable name)
         - matches: List of Symbol objects representing variable declarations and usages
     """
-    print(f"[TOOL CALL] treesitter_find_variable(file_path={file_path}, name={name})", file=sys.stderr)
+
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
-        print(f"[TOOL RETURN] treesitter_find_variable -> {type(result)}: {result}", file=sys.stderr)
+
         return result
         
     try:
@@ -175,15 +175,15 @@ def treesitter_find_variable(file_path: str, name: str) -> Any:
         if hasattr(analyzer, 'find_variable'):
             result = analyzer.find_variable(tree.root_node, file_path, name)
             result_dict = result.model_dump()
-            print(f"[TOOL RETURN] treesitter_find_variable -> {type(result_dict)}: keys={list(result_dict.keys())}", file=sys.stderr)
+
             return result_dict
         else:
             result = {"error": "Variable search not supported for this language"}
-            print(f"[TOOL RETURN] treesitter_find_variable -> {type(result)}: {result}", file=sys.stderr)
+
             return result
     except Exception as e:
         result = {"error": f"Error finding variable: {str(e)}"}
-        print(f"[TOOL RETURN] treesitter_find_variable -> {type(result)}: {result}", file=sys.stderr)
+
         return result
 
 @mcp.tool()
@@ -193,9 +193,9 @@ def treesitter_get_supported_languages() -> list[str]:
     Returns:
         List of supported language names (e.g., ['python', 'c', 'cpp'])
     """
-    print(f"[TOOL CALL] treesitter_get_supported_languages()", file=sys.stderr)
+
     result = list(analyzers.keys())
-    print(f"[TOOL RETURN] treesitter_get_supported_languages -> {type(result)}: {result}", file=sys.stderr)
+
     return result
 
 @mcp.tool()
@@ -216,11 +216,11 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
         - text: Optional text content
         - id: Optional node identifier
     """
-    print(f"[TOOL CALL] treesitter_get_ast(file_path={file_path}, max_depth={max_depth})", file=sys.stderr)
+
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
-        print(f"[TOOL RETURN] treesitter_get_ast -> {type(result)}: {result}", file=sys.stderr)
+
         return result
         
     try:
@@ -230,11 +230,11 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
         tree = analyzer.parse(code)
         ast = analyzer._build_ast(tree.root_node, code, max_depth=max_depth)
         result_dict = ast.model_dump()
-        print(f"[TOOL RETURN] treesitter_get_ast -> {type(result_dict)}: keys={list(result_dict.keys())}", file=sys.stderr)
+
         return result_dict
     except Exception as e:
         result = {"error": f"Error getting AST: {str(e)}"}
-        print(f"[TOOL RETURN] treesitter_get_ast -> {type(result)}: {result}", file=sys.stderr)
+
         return result
 
 @mcp.tool()
@@ -249,14 +249,14 @@ def treesitter_run_query(query: str, file_path: str, language: str = None) -> An
     Returns:
         Query results as a dictionary or list, depending on the query structure
     """
-    print(f"[TOOL CALL] treesitter_run_query(query={query[:50]}..., file_path={file_path}, language={language})", file=sys.stderr)
+
     # If language is provided, we could potentially force it, but usually file extension is enough.
     # The request mentioned language="c", so we should handle it if passed, or rely on file path.
     
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
-        print(f"[TOOL RETURN] treesitter_run_query -> {type(result)}: {result}", file=sys.stderr)
+
         return result
         
     try:
@@ -265,11 +265,11 @@ def treesitter_run_query(query: str, file_path: str, language: str = None) -> An
             
         tree = analyzer.parse(code)
         results = analyzer.run_query(query, tree.root_node, code)
-        print(f"[TOOL RETURN] treesitter_run_query -> {type(results)}", file=sys.stderr)
+
         return results
     except Exception as e:
         result = {"error": f"Error running query: {str(e)}"}
-        print(f"[TOOL RETURN] treesitter_run_query -> {type(result)}: {result}", file=sys.stderr)
+
         return result
 
 @mcp.tool()
@@ -286,11 +286,11 @@ def treesitter_find_usage(name: str, file_path: str, language: str = None) -> An
         - query: The search query (symbol name)
         - matches: List of Symbol objects representing all usages of the symbol
     """
-    print(f"[TOOL CALL] treesitter_find_usage(name={name}, file_path={file_path}, language={language})", file=sys.stderr)
+
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
-        print(f"[TOOL RETURN] treesitter_find_usage -> {type(result)}: {result}", file=sys.stderr)
+
         return result
         
     try:
@@ -300,11 +300,11 @@ def treesitter_find_usage(name: str, file_path: str, language: str = None) -> An
         tree = analyzer.parse(code)
         result = analyzer.find_usage(tree.root_node, file_path, name)
         result_dict = result.model_dump()
-        print(f"[TOOL RETURN] treesitter_find_usage -> {type(result_dict)}: keys={list(result_dict.keys())}", file=sys.stderr)
+
         return result_dict
     except Exception as e:
         result = {"error": f"Error finding usage: {str(e)}"}
-        print(f"[TOOL RETURN] treesitter_find_usage -> {type(result)}: {result}", file=sys.stderr)
+
         return result
 
 @mcp.tool()
@@ -319,11 +319,11 @@ def treesitter_get_dependencies(file_path: str) -> Any:
         - For Python: import module names
         - For C/C++: included file paths (without quotes/brackets)
     """
-    print(f"[TOOL CALL] treesitter_get_dependencies(file_path={file_path})", file=sys.stderr)
+
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
-        print(f"[TOOL RETURN] treesitter_get_dependencies -> {type(result)}: {result}", file=sys.stderr)
+
         return result
         
     try:
@@ -332,11 +332,11 @@ def treesitter_get_dependencies(file_path: str) -> Any:
             
         tree = analyzer.parse(code)
         dependencies = analyzer.get_dependencies(tree.root_node, file_path)
-        print(f"[TOOL RETURN] treesitter_get_dependencies -> {type(dependencies)}: {dependencies}", file=sys.stderr)
+
         return dependencies
     except Exception as e:
         result = {"error": f"Error getting dependencies: {str(e)}"}
-        print(f"[TOOL RETURN] treesitter_get_dependencies -> {type(result)}: {result}", file=sys.stderr)
+
         return result
 
 def main():
