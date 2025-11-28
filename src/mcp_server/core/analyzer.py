@@ -27,11 +27,13 @@ class BaseAnalyzer(ABC):
             symbols=symbols
         )
 
-    def _build_ast(self, node: Node, code: str) -> ASTNode:
+    def _build_ast(self, node: Node, code: str, depth: int = 0, max_depth: int = -1) -> ASTNode:
         start = Point(row=node.start_point[0], column=node.start_point[1])
         end = Point(row=node.end_point[0], column=node.end_point[1])
         
-        children = [self._build_ast(child, code) for child in node.children]
+        children = []
+        if max_depth == -1 or depth < max_depth:
+            children = [self._build_ast(child, code, depth + 1, max_depth) for child in node.children]
         
         text = None
         if not children:

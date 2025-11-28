@@ -29,7 +29,7 @@ def get_analyzer(file_path: str):
 
 @mcp.tool()
 def treesitter_analyze_file(file_path: str) -> Any:
-    """Analyze a source code file and extract its Abstract Syntax Tree (AST) and symbols.
+    """Analyze a source code file and extract symbols (functions, classes, etc.).
     
     Args:
         file_path: Path to the source code file to analyze (supports .py, .c, .cpp, .h, .hpp)
@@ -38,9 +38,11 @@ def treesitter_analyze_file(file_path: str) -> Any:
         Dictionary containing:
         - file_path: The analyzed file path
         - language: Detected programming language
-        - ast: Complete Abstract Syntax Tree
         - symbols: List of extracted symbols (functions, classes, etc.)
         - errors: Any parsing errors encountered
+        
+    Note: This function does not return the full AST to avoid serialization issues.
+    Use treesitter_get_ast() if you need the complete AST.
     """
     print(f"[TOOL CALL] treesitter_analyze_file(file_path={file_path})", file=sys.stderr)
     analyzer = get_analyzer(file_path)
@@ -55,6 +57,10 @@ def treesitter_analyze_file(file_path: str) -> Any:
             
         result = analyzer.analyze(file_path, code)
         result_dict = result.model_dump()
+        
+        # Remove the AST to avoid protobuf serialization issues with large files
+        result_dict.pop('ast', None)
+        
         print(f"[TOOL RETURN] treesitter_analyze_file -> {type(result_dict)}: keys={list(result_dict.keys())}", file=sys.stderr)
         return result_dict
     except Exception as e:
@@ -193,11 +199,13 @@ def treesitter_get_supported_languages() -> list[str]:
     return result
 
 @mcp.tool()
-def treesitter_get_ast(file_path: str) -> Any:
+def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
     """Extract the complete Abstract Syntax Tree (AST) from a source file.
     
     Args:
         file_path: Path to the source code file
+        max_depth: Maximum depth of the AST to return. -1 for no limit (default).
+                   Useful for large files to avoid serialization errors.
     
     Returns:
         Dictionary representing the AST root node with:
@@ -208,7 +216,7 @@ def treesitter_get_ast(file_path: str) -> Any:
         - text: Optional text content
         - id: Optional node identifier
     """
-    print(f"[TOOL CALL] treesitter_get_ast(file_path={file_path})", file=sys.stderr)
+    print(f"[TOOL CALL] treesitter_get_ast(file_path={file_path}, max_depth={max_depth})", file=sys.stderr)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
@@ -220,7 +228,7 @@ def treesitter_get_ast(file_path: str) -> Any:
             code = f.read()
             
         tree = analyzer.parse(code)
-        ast = analyzer._build_ast(tree.root_node, code)
+        ast = analyzer._build_ast(tree.root_node, code, max_depth=max_depth)
         result_dict = ast.model_dump()
         print(f"[TOOL RETURN] treesitter_get_ast -> {type(result_dict)}: keys={list(result_dict.keys())}", file=sys.stderr)
         return result_dict
