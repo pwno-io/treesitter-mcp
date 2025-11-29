@@ -340,9 +340,21 @@ def treesitter_get_dependencies(file_path: str) -> Any:
         return result
 
 def main():
+    import argparse
     import sys
+
+    parser = argparse.ArgumentParser(description="Code Analysis MCP Server")
+    parser.add_argument("--http", action="store_true", help="Run in streamable HTTP mode")
+    parser.add_argument("--port", type=int, default=8000, help="Port to run the HTTP server on (default: 8000)")
+    args = parser.parse_args()
+
     print("Starting Code Analysis MCP Server...", file=sys.stderr)
-    mcp.run()
+    
+    if args.http:
+        mcp.settings.port = args.port
+        mcp.run(transport='streamable-http')
+    else:
+        mcp.run()
 
 if __name__ == "__main__":
     main()
