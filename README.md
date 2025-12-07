@@ -1,4 +1,4 @@
-# Code Analysis MCP Server
+# Tree-sitter MCP Server
 
 A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This tool provides capabilities to parse code, extract symbols, generate call graphs, find usages, and run custom queries against C, C++, and Python code.
 
@@ -32,8 +32,8 @@ A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This 
     ```
 
 This will install two command-line tools:
--   `code-analysis`: The CLI for analyzing files
--   `code-analysis-server`: The MCP server
+-   `treesitter-mcp`: The CLI for analyzing files
+-   `treesitter-mcp-server`: The MCP server
 
 You can now use these commands from anywhere on your system.
 
@@ -41,37 +41,37 @@ You can now use these commands from anywhere on your system.
 
 ### CLI
 
-The CLI is available as the `code-analysis` command after installation.
+The CLI is available as the `treesitter-mcp` command after installation.
 
 ```bash
-code-analysis <file_path> [options]
+treesitter-mcp <file_path> [options]
 ```
 
 #### Examples
 
 **Get AST:**
 ```bash
-code-analysis test.c --ast
+treesitter-mcp test.c --ast
 ```
 
 **Find Function Definition:**
 ```bash
-code-analysis test.c --find-function my_func
+treesitter-mcp test.c --find-function my_func
 ```
 
 **Find Usages:**
 ```bash
-code-analysis test.c --find-usage my_func
+treesitter-mcp test.c --find-usage my_func
 ```
 
 **Get Dependencies:**
 ```bash
-code-analysis test.c --dependencies
+treesitter-mcp test.c --dependencies
 ```
 
 **Run Custom Query:**
 ```bash
-code-analysis test.c --query "(function_definition) @func"
+treesitter-mcp test.c --query "(function_definition) @func"
 ```
 
 ### MCP Server
@@ -79,7 +79,7 @@ code-analysis test.c --query "(function_definition) @func"
 To run the MCP server:
 
 ```bash
-code-analysis-server
+treesitter-mcp-server
 ```
 
 Configure your MCP client (e.g., Claude Desktop) to use this server. See `docs/MCP_USAGE.md` for detailed configuration instructions.

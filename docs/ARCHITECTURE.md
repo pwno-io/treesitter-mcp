@@ -6,12 +6,12 @@ The Code Analysis MCP Server is built on top of [Tree-sitter](https://tree-sitte
 
 ## Components
 
-### 1. Language Manager (`src/mcp_server/core/language_manager.py`)
+### 1. Language Manager (`src/treesitter_mcp/core/language_manager.py`)
 Responsible for loading Tree-sitter languages and parsers.
 -   Manages `Language` and `Parser` instances.
 -   Handles version-specific initialization (specifically for `tree-sitter` 0.21.3).
 
-### 2. Analyzers (`src/mcp_server/core/analyzer.py` & `src/mcp_server/languages/`)
+### 2. Analyzers (`src/treesitter_mcp/core/analyzer.py` & `src/treesitter_mcp/languages/`)
 The core logic resides in the `BaseAnalyzer` class and its language-specific subclasses.
 -   **`BaseAnalyzer`**: Defines the interface and common methods (`parse`, `_build_ast`, `run_query`).
 -   **`CAnalyzer` (`c.py`)**: Implements C-specific logic (call graphs, includes).
@@ -19,8 +19,8 @@ The core logic resides in the `BaseAnalyzer` class and its language-specific sub
 -   **`PythonAnalyzer` (`python.py`)**: Implements Python-specific logic (imports).
 
 ### 3. Interfaces
--   **CLI (`src/mcp_server/cli.py`)**: A command-line wrapper around the analyzers.
--   **MCP Server (`src/mcp_server/server.py`)**: Exposes analyzer functionality as MCP tools.
+-   **CLI (`src/treesitter_mcp/cli.py`)**: A command-line wrapper around the analyzers.
+-   **MCP Server (`src/treesitter_mcp/server.py`)**: Exposes analyzer functionality as MCP tools.
 
 ## Tree-sitter Versioning
 

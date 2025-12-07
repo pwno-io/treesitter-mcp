@@ -2,7 +2,7 @@
 
 ## CLI Arguments
 
-The CLI (`src/mcp_server/cli.py`) supports the following arguments:
+The CLI (`src/treesitter_mcp/cli.py`) supports the following arguments:
 
 | Argument | Description | Example |
 | :--- | :--- | :--- |
@@ -17,7 +17,7 @@ The CLI (`src/mcp_server/cli.py`) supports the following arguments:
 
 ## MCP Tools
 
-The MCP server (`src/mcp_server/server.py`) exposes the following tools:
+The MCP server (`src/treesitter_mcp/server.py`) exposes the following tools:
 
 ### `get_ast`
 Returns the Abstract Syntax Tree of a file.
