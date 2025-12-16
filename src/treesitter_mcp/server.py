@@ -25,7 +25,15 @@ def get_analyzer(file_path: str):
         return analyzers['c']
     elif ext in ('.cpp', '.cc', '.cxx', '.h', '.hpp'):
         return analyzers['cpp']
+    elif ext in ('.cpp', '.cc', '.cxx', '.h', '.hpp'):
+        return analyzers['cpp']
     return None
+
+def normalize_path(file_path: str) -> str:
+    """Normalize file path by expanding user and resolving absolute path."""
+    return os.path.abspath(os.path.expanduser(file_path))
+
+
 
 @mcp.tool()
 def treesitter_analyze_file(file_path: str) -> Any:
@@ -45,6 +53,7 @@ def treesitter_analyze_file(file_path: str) -> Any:
     Use treesitter_get_ast() if you need the complete AST.
     """
 
+    file_path = normalize_path(file_path)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
@@ -83,6 +92,7 @@ def treesitter_get_call_graph(file_path: str) -> Any:
           - calls: List of function names called by this function
     """
 
+    file_path = normalize_path(file_path)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
@@ -122,6 +132,7 @@ def treesitter_find_function(file_path: str, name: str) -> Any:
         - matches: List of Symbol objects representing matching function definitions
     """
 
+    file_path = normalize_path(file_path)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
@@ -161,6 +172,7 @@ def treesitter_find_variable(file_path: str, name: str) -> Any:
         - matches: List of Symbol objects representing variable declarations and usages
     """
 
+    file_path = normalize_path(file_path)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
@@ -217,6 +229,7 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
         - id: Optional node identifier
     """
 
+    file_path = normalize_path(file_path)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
@@ -253,6 +266,7 @@ def treesitter_run_query(query: str, file_path: str, language: str = None) -> An
     # If language is provided, we could potentially force it, but usually file extension is enough.
     # The request mentioned language="c", so we should handle it if passed, or rely on file path.
     
+    file_path = normalize_path(file_path)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
@@ -287,6 +301,7 @@ def treesitter_find_usage(name: str, file_path: str, language: str = None) -> An
         - matches: List of Symbol objects representing all usages of the symbol
     """
 
+    file_path = normalize_path(file_path)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
@@ -320,6 +335,7 @@ def treesitter_get_dependencies(file_path: str) -> Any:
         - For C/C++: included file paths (without quotes/brackets)
     """
 
+    file_path = normalize_path(file_path)
     analyzer = get_analyzer(file_path)
     if not analyzer:
         result = {"error": f"Unsupported file type: {file_path}"}
