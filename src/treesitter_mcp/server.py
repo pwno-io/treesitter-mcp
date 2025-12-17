@@ -3,7 +3,7 @@ from .core.language_manager import LanguageManager
 from .languages.python import PythonAnalyzer
 from .languages.c import CAnalyzer
 from .languages.cpp import CppAnalyzer
-from .languages.cpp import CppAnalyzer
+
 import os
 import sys
 from typing import Any
@@ -18,6 +18,14 @@ analyzers = {
 }
 
 def get_analyzer(file_path: str):
+    """Determine the appropriate analyzer for a given file path based on extension.
+    
+    Args:
+        file_path: path to the file
+        
+    Returns:
+        Analyzer instance or None if not supported
+    """
     ext = os.path.splitext(file_path)[1]
     if ext == '.py':
         return analyzers['python']
@@ -25,13 +33,13 @@ def get_analyzer(file_path: str):
         return analyzers['c']
     elif ext in ('.cpp', '.cc', '.cxx', '.h', '.hpp'):
         return analyzers['cpp']
-    elif ext in ('.cpp', '.cc', '.cxx', '.h', '.hpp'):
-        return analyzers['cpp']
     return None
 
 def normalize_path(file_path: str) -> str:
     """Normalize file path by expanding user and resolving absolute path."""
-    return os.path.abspath(os.path.expanduser(file_path))
+    if not file_path:
+        return ""
+    return os.path.abspath(os.path.expanduser(file_path.strip()))
 
 
 
@@ -53,14 +61,15 @@ def treesitter_analyze_file(file_path: str) -> Any:
     Use treesitter_get_ast() if you need the complete AST.
     """
 
-    file_path = normalize_path(file_path)
-    analyzer = get_analyzer(file_path)
-    if not analyzer:
-        result = {"error": f"Unsupported file type: {file_path}"}
-
-        return result
-    
     try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+            
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+        
         with open(file_path, 'r') as f:
             code = f.read()
             
@@ -70,12 +79,9 @@ def treesitter_analyze_file(file_path: str) -> Any:
         # Remove the AST to avoid protobuf serialization issues with large files
         result_dict.pop('ast', None)
         
-
         return result_dict
     except Exception as e:
-        result = {"error": f"Error analyzing file: {str(e)}"}
-
-        return result
+        return {"error": f"Error analyzing file: {str(e)}"}
 
 @mcp.tool()
 def treesitter_get_call_graph(file_path: str) -> Any:
@@ -92,14 +98,15 @@ def treesitter_get_call_graph(file_path: str) -> Any:
           - calls: List of function names called by this function
     """
 
-    file_path = normalize_path(file_path)
-    analyzer = get_analyzer(file_path)
-    if not analyzer:
-        result = {"error": f"Unsupported file type: {file_path}"}
-
-        return result
-        
     try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+            
         with open(file_path, 'r') as f:
             code = f.read()
             
@@ -110,13 +117,9 @@ def treesitter_get_call_graph(file_path: str) -> Any:
 
             return result_dict
         else:
-            result = {"error": "Call graph not supported for this language"}
-
-            return result
+            return {"error": "Call graph not supported for this language"}
     except Exception as e:
-        result = {"error": f"Error generating call graph: {str(e)}"}
-
-        return result
+        return {"error": f"Error generating call graph: {str(e)}"}
 
 @mcp.tool()
 def treesitter_find_function(file_path: str, name: str) -> Any:
@@ -132,14 +135,15 @@ def treesitter_find_function(file_path: str, name: str) -> Any:
         - matches: List of Symbol objects representing matching function definitions
     """
 
-    file_path = normalize_path(file_path)
-    analyzer = get_analyzer(file_path)
-    if not analyzer:
-        result = {"error": f"Unsupported file type: {file_path}"}
-
-        return result
-        
     try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+            
         with open(file_path, 'r') as f:
             code = f.read()
             
@@ -150,13 +154,9 @@ def treesitter_find_function(file_path: str, name: str) -> Any:
 
             return result_dict
         else:
-            result = {"error": "Function search not supported for this language"}
-
-            return result
+            return {"error": "Function search not supported for this language"}
     except Exception as e:
-        result = {"error": f"Error finding function: {str(e)}"}
-
-        return result
+        return {"error": f"Error finding function: {str(e)}"}
 
 @mcp.tool()
 def treesitter_find_variable(file_path: str, name: str) -> Any:
@@ -172,14 +172,15 @@ def treesitter_find_variable(file_path: str, name: str) -> Any:
         - matches: List of Symbol objects representing variable declarations and usages
     """
 
-    file_path = normalize_path(file_path)
-    analyzer = get_analyzer(file_path)
-    if not analyzer:
-        result = {"error": f"Unsupported file type: {file_path}"}
-
-        return result
-        
     try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+            
         with open(file_path, 'r') as f:
             code = f.read()
             
@@ -190,13 +191,9 @@ def treesitter_find_variable(file_path: str, name: str) -> Any:
 
             return result_dict
         else:
-            result = {"error": "Variable search not supported for this language"}
-
-            return result
+            return {"error": "Variable search not supported for this language"}
     except Exception as e:
-        result = {"error": f"Error finding variable: {str(e)}"}
-
-        return result
+        return {"error": f"Error finding variable: {str(e)}"}
 
 @mcp.tool()
 def treesitter_get_supported_languages() -> list[str]:
@@ -206,9 +203,11 @@ def treesitter_get_supported_languages() -> list[str]:
         List of supported language names (e.g., ['python', 'c', 'cpp'])
     """
 
-    result = list(analyzers.keys())
-
-    return result
+    try:
+        result = list(analyzers.keys())
+        return result
+    except Exception as e:
+        return []
 
 @mcp.tool()
 def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
@@ -229,14 +228,15 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
         - id: Optional node identifier
     """
 
-    file_path = normalize_path(file_path)
-    analyzer = get_analyzer(file_path)
-    if not analyzer:
-        result = {"error": f"Unsupported file type: {file_path}"}
-
-        return result
-        
     try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+            
         with open(file_path, 'r') as f:
             code = f.read()
             
@@ -246,9 +246,7 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
 
         return result_dict
     except Exception as e:
-        result = {"error": f"Error getting AST: {str(e)}"}
-
-        return result
+        return {"error": f"Error getting AST: {str(e)}"}
 
 @mcp.tool()
 def treesitter_run_query(query: str, file_path: str, language: str = None) -> Any:
@@ -266,14 +264,15 @@ def treesitter_run_query(query: str, file_path: str, language: str = None) -> An
     # If language is provided, we could potentially force it, but usually file extension is enough.
     # The request mentioned language="c", so we should handle it if passed, or rely on file path.
     
-    file_path = normalize_path(file_path)
-    analyzer = get_analyzer(file_path)
-    if not analyzer:
-        result = {"error": f"Unsupported file type: {file_path}"}
-
-        return result
-        
     try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+            
         with open(file_path, 'r') as f:
             code = f.read()
             
@@ -282,9 +281,7 @@ def treesitter_run_query(query: str, file_path: str, language: str = None) -> An
 
         return results
     except Exception as e:
-        result = {"error": f"Error running query: {str(e)}"}
-
-        return result
+        return {"error": f"Error running query: {str(e)}"}
 
 @mcp.tool()
 def treesitter_find_usage(name: str, file_path: str, language: str = None) -> Any:
@@ -301,14 +298,15 @@ def treesitter_find_usage(name: str, file_path: str, language: str = None) -> An
         - matches: List of Symbol objects representing all usages of the symbol
     """
 
-    file_path = normalize_path(file_path)
-    analyzer = get_analyzer(file_path)
-    if not analyzer:
-        result = {"error": f"Unsupported file type: {file_path}"}
-
-        return result
-        
     try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+            
         with open(file_path, 'r') as f:
             code = f.read()
             
@@ -318,9 +316,7 @@ def treesitter_find_usage(name: str, file_path: str, language: str = None) -> An
 
         return result_dict
     except Exception as e:
-        result = {"error": f"Error finding usage: {str(e)}"}
-
-        return result
+        return {"error": f"Error finding usage: {str(e)}"}
 
 @mcp.tool()
 def treesitter_get_dependencies(file_path: str) -> Any:
@@ -335,14 +331,15 @@ def treesitter_get_dependencies(file_path: str) -> Any:
         - For C/C++: included file paths (without quotes/brackets)
     """
 
-    file_path = normalize_path(file_path)
-    analyzer = get_analyzer(file_path)
-    if not analyzer:
-        result = {"error": f"Unsupported file type: {file_path}"}
-
-        return result
-        
     try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+            
         with open(file_path, 'r') as f:
             code = f.read()
             
@@ -351,11 +348,10 @@ def treesitter_get_dependencies(file_path: str) -> Any:
 
         return dependencies
     except Exception as e:
-        result = {"error": f"Error getting dependencies: {str(e)}"}
-
-        return result
+        return {"error": f"Error getting dependencies: {str(e)}"}
 
 def main():
+    """Main entry point for the MCP server."""
     import argparse
     import sys
 
