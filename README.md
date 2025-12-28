@@ -14,28 +14,27 @@ A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This 
 
 ## Installation
 
-### Prerequisites
+### Quick install (PyPI)
 
--   Python 3.10+
--   `pip`
+```bash
+pip install treesitter-mcp
 
-### Setup
+# or with uvx (no global install)
+uvx treesitter-mcp --help
 
-1.  Clone the repository.
-2.  Install the package in editable mode:
-    ```bash
-    # Using uv (recommended)
-    uv pip install -e .
-    
-    # Or using pip
-    pip install -e .
-    ```
+# or install the binary with uv tool
+uv tool install treesitter-mcp
+```
 
-This will install two command-line tools:
--   `treesitter`: The CLI for analyzing files
--   `treesitter-mcp`: The MCP server
+This provides two commands:
+-   `treesitter`: CLI for analyzing files
+-   `treesitter-mcp`: MCP server
 
-You can now use these commands from anywhere on your system.
+Check available options:
+```bash
+treesitter --help
+treesitter-mcp --help
+```
 
 ## Usage
 

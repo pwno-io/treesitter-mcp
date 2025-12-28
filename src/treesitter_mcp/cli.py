@@ -13,19 +13,34 @@ from .languages.go import GoAnalyzer
 from .languages.java import JavaAnalyzer
 
 def main():
-    parser = argparse.ArgumentParser(description="Tree-sitter Analysis CLI")
-    parser.add_argument("file", help="File to analyze")
-    parser.add_argument("--call-graph", action="store_true", help="Generate call graph")
-    parser.add_argument("--find-function", help="Find function by name")
-    parser.add_argument("--find-variable", help="Find variable by name")
-    parser.add_argument("--ast", action="store_true", help="Get AST")
-    parser.add_argument("--node-at", nargs=2, type=int, metavar=("ROW", "COL"), help="Get the AST node covering the given (row, col)")
-    parser.add_argument("--range", dest="range_points", nargs=4, type=int, metavar=("START_ROW", "START_COL", "END_ROW", "END_COL"), help="Get the AST node covering the given point range")
-    parser.add_argument("--cursor", nargs=2, type=int, metavar=("ROW", "COL"), help="Get a cursor-style view (ancestors/siblings/children) at a point")
-    parser.add_argument("--max-depth", type=int, default=-1, help="Limit AST depth for AST/node/range/cursor outputs (-1 for full)")
-    parser.add_argument("--query", help="Run a tree-sitter query")
-    parser.add_argument("--find-usage", help="Find usages of a symbol")
-    parser.add_argument("--dependencies", action="store_true", help="Get dependencies")
+    class _HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter):
+        pass
+
+    parser = argparse.ArgumentParser(
+        description="Tree-sitter CLI for AST, symbols, call graphs, and code queries (multi-language).",
+        formatter_class=_HelpFormatter,
+        epilog="""Examples:
+  treesitter sample.c   --ast
+  treesitter sample.cpp --call-graph
+  treesitter sample.py  --find-function foo
+  treesitter sample.js  --find-usage myVar
+  treesitter sample.ts  --query "(function_declaration) @fn"
+  treesitter sample.rs  --dependencies
+""",
+    )
+
+    parser.add_argument("file", help="Source file to analyze")
+    parser.add_argument("--call-graph", action="store_true", help="Generate call graph for functions")
+    parser.add_argument("--find-function", help="Find function definition by exact name")
+    parser.add_argument("--find-variable", help="Find variable definition by exact name")
+    parser.add_argument("--ast", action="store_true", help="Print AST (optionally limited by --max-depth)")
+    parser.add_argument("--node-at", nargs=2, type=int, metavar=("ROW", "COL"), help="Get AST node covering a point (0-based row, col)")
+    parser.add_argument("--range", dest="range_points", nargs=4, type=int, metavar=("START_ROW", "START_COL", "END_ROW", "END_COL"), help="Get AST node covering a range (0-based positions)")
+    parser.add_argument("--cursor", nargs=2, type=int, metavar=("ROW", "COL"), help="Cursor-style view (ancestors/siblings/children) at a point")
+    parser.add_argument("--max-depth", type=int, default=-1, help="Limit AST depth for AST/node/range/cursor outputs (-1 for full tree)")
+    parser.add_argument("--query", help="Run a raw tree-sitter S-expression query")
+    parser.add_argument("--find-usage", help="Find usages of a symbol by exact name")
+    parser.add_argument("--dependencies", action="store_true", help="List includes/imports/dependencies")
     args = parser.parse_args()
     
     file_path = os.path.abspath(args.file)
