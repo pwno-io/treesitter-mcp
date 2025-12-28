@@ -3,6 +3,12 @@ from .core.language_manager import LanguageManager
 from .languages.python import PythonAnalyzer
 from .languages.c import CAnalyzer
 from .languages.cpp import CppAnalyzer
+from .languages.javascript import JavaScriptAnalyzer
+from .languages.php import PhpAnalyzer
+from .languages.rust import RustAnalyzer
+from .languages.typescript import TypeScriptAnalyzer
+from .languages.go import GoAnalyzer
+from .languages.java import JavaAnalyzer
 
 import os
 import sys
@@ -15,6 +21,12 @@ analyzers = {
     'python': PythonAnalyzer(language_manager),
     'c': CAnalyzer(language_manager),
     'cpp': CppAnalyzer(language_manager),
+    'javascript': JavaScriptAnalyzer(language_manager),
+    'php': PhpAnalyzer(language_manager),
+    'rust': RustAnalyzer(language_manager),
+    'typescript': TypeScriptAnalyzer(language_manager),
+    'go': GoAnalyzer(language_manager),
+    'java': JavaAnalyzer(language_manager),
 }
 
 def get_analyzer(file_path: str):
@@ -33,6 +45,18 @@ def get_analyzer(file_path: str):
         return analyzers['c']
     elif ext in ('.cpp', '.cc', '.cxx', '.h', '.hpp'):
         return analyzers['cpp']
+    elif ext in ('.js', '.jsx', '.mjs', '.cjs'):
+        return analyzers['javascript']
+    elif ext in ('.php', '.phtml'):
+        return analyzers['php']
+    elif ext == '.rs':
+        return analyzers['rust']
+    elif ext in ('.ts', '.tsx', '.cts', '.mts'):
+        return analyzers['typescript']
+    elif ext == '.go':
+        return analyzers['go']
+    elif ext == '.java':
+        return analyzers['java']
     return None
 
 def normalize_path(file_path: str) -> str:
@@ -247,6 +271,73 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
         return result_dict
     except Exception as e:
         return {"error": f"Error getting AST: {str(e)}"}
+
+@mcp.tool()
+def treesitter_get_node_at_point(file_path: str, row: int, column: int, max_depth: int = 0) -> Any:
+    """Return the AST node covering a specific point (row, column)."""
+    try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+
+        with open(file_path, 'r') as f:
+            code = f.read()
+
+        ast = analyzer.build_node_at_point(code, row=row, column=column, max_depth=max_depth)
+        return ast.model_dump()
+    except Exception as e:
+        return {"error": f"Error getting node at point: {str(e)}"}
+
+@mcp.tool()
+def treesitter_get_node_for_range(file_path: str, start_row: int, start_column: int, end_row: int, end_column: int, max_depth: int = 0) -> Any:
+    """Return the smallest AST node covering a point range."""
+    try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+
+        with open(file_path, 'r') as f:
+            code = f.read()
+
+        ast = analyzer.build_node_for_range(
+            code,
+            start_row=start_row,
+            start_col=start_column,
+            end_row=end_row,
+            end_col=end_column,
+            max_depth=max_depth,
+        )
+        return ast.model_dump()
+    except Exception as e:
+        return {"error": f"Error getting node for range: {str(e)}"}
+
+@mcp.tool()
+def treesitter_cursor_walk(file_path: str, row: int, column: int, max_depth: int = 1) -> Any:
+    """Return a cursor-style view (focus node + context) at a point."""
+    try:
+        file_path = normalize_path(file_path)
+        if not os.path.exists(file_path):
+            return {"error": f"File not found: {file_path}"}
+
+        analyzer = get_analyzer(file_path)
+        if not analyzer:
+            return {"error": f"Unsupported file type: {file_path}"}
+
+        with open(file_path, 'r') as f:
+            code = f.read()
+
+        result = analyzer.build_cursor_view(code, row=row, column=column, max_depth=max_depth)
+        return result
+    except Exception as e:
+        return {"error": f"Error walking cursor: {str(e)}"}
 
 @mcp.tool()
 def treesitter_run_query(query: str, file_path: str, language: str = None) -> Any:

@@ -2,19 +2,58 @@
 name = "treesitter-mcp"
 version = "0.1.0"
 description = "MCP server for code analysis using Tree-sitter"
+readme = "README.md"
 requires-python = ">=3.10"
+authors = [
+    { name = "pwno-io" },
+]
+keywords = [
+    "tree-sitter",
+    "mcp",
+    "ast",
+    "code-analysis",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "mcp",
     "tree-sitter>=0.22.0",
     "tree-sitter-c",
     "tree-sitter-cpp",
+    "tree-sitter-php",
+    "tree-sitter-rust",
+    "tree-sitter-javascript",
+    "tree-sitter-typescript",
+    "tree-sitter-go",
+    "tree-sitter-java",
     "tree-sitter-python",
     "pydantic",
 ]
 
+[project.urls]
+Homepage = "https://github.com/pwno-io/treesitter-mcp"
+Repository = "https://github.com/pwno-io/treesitter-mcp"
+Issues = "https://github.com/pwno-io/treesitter-mcp/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
 [project.scripts]
-treesitter-mcp-server = "treesitter_mcp.server:main"
-treesitter-mcp = "treesitter_mcp.cli:main"
+# CLI renamed from `treesitter-mcp` to `treesitter`
+treesitter = "treesitter_mcp.cli:main"
+# MCP server renamed from `treesitter-mcp-server` to `treesitter-mcp`
+treesitter-mcp = "treesitter_mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

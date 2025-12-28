@@ -14,7 +14,7 @@ class CppAnalyzer(BaseAnalyzer):
         query_scm = """
         (function_definition
           declarator: (function_declarator
-            declarator: (identifier) @function.name)) @function.def
+            declarator: [(identifier) (field_identifier) (qualified_identifier)] @function.name)) @function.def
         (class_specifier
           name: (type_identifier) @class.name) @class.def
         """
@@ -52,7 +52,7 @@ class CppAnalyzer(BaseAnalyzer):
         func_query_scm = """
         (function_definition
           declarator: (function_declarator
-            declarator: (identifier) @function.name)) @function.def
+            declarator: [(identifier) (field_identifier) (qualified_identifier)] @function.name)) @function.def
         """
         func_query = Query(language, func_query_scm)
         func_cursor = QueryCursor(func_query)
@@ -65,7 +65,10 @@ class CppAnalyzer(BaseAnalyzer):
                     while declarator and declarator.type in ('pointer_declarator', 'function_declarator', 'parenthesized_declarator', 'reference_declarator'):
                          declarator = declarator.child_by_field_name('declarator')
                     
-                    if not declarator or (declarator.type != 'identifier' and declarator.type != 'field_identifier'):
+                    if not declarator or (
+                        declarator.type
+                        not in ('identifier', 'field_identifier', 'qualified_identifier')
+                    ):
                         continue
                         
                     func_name = declarator.text.decode('utf8')
@@ -106,7 +109,7 @@ class CppAnalyzer(BaseAnalyzer):
         query_scm = """
         (function_definition
           declarator: (function_declarator
-            declarator: (identifier) @function.name
+            declarator: [(identifier) (field_identifier) (qualified_identifier)] @function.name
             (#eq? @function.name "{name}"))) @function.def
         """.format(name=name)
         

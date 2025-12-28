@@ -12,7 +12,7 @@ The CLI (`src/treesitter_mcp/cli.py`) supports the following arguments:
 | `--find-variable <name>` | Find the definition and usage of a variable by name. | `--find-variable count` |
 | `--find-usage <name>` | Find all usages (and definitions) of a symbol. | `--find-usage helper` |
 | `--dependencies` | List file dependencies (includes/imports). | `--dependencies` |
-| `--call-graph` | Generate a call graph for the file (C/C++ only). | `--call-graph` |
+| `--call-graph` | Generate a call graph for the file (C/C++/JavaScript/PHP/Rust/TypeScript/Go/Java). | `--call-graph` |
 | `--query <query>` | Run a custom Tree-sitter S-expression query. | `--query "(identifier) @id"` |
 
 ## MCP Tools
@@ -23,6 +23,21 @@ The MCP server (`src/treesitter_mcp/server.py`) exposes the following tools:
 Returns the Abstract Syntax Tree of a file.
 - **Arguments**: `file_path` (string)
 - **Returns**: JSON string of the AST.
+
+### `get_node_at_point`
+Returns the smallest AST node covering a specific point.
+- **Arguments**: `file_path` (string), `row` (int), `column` (int), `max_depth` (int, optional; default 0)
+- **Returns**: JSON AST node (includes field names).
+
+### `get_node_for_range`
+Returns the smallest AST node covering a point range.
+- **Arguments**: `file_path` (string), `start_row` (int), `start_column` (int), `end_row` (int), `end_column` (int), `max_depth` (int, optional; default 0)
+- **Returns**: JSON AST node (includes field names).
+
+### `cursor_walk`
+Returns a cursor-style snapshot (focus node + ancestors/siblings/children) at a point.
+- **Arguments**: `file_path` (string), `row` (int), `column` (int), `max_depth` (int, optional; default 1)
+- **Returns**: JSON object with `focus`, `ancestors`, `siblings`, and `children`.
 
 ### `run_query`
 Executes a Tree-sitter query against a file.

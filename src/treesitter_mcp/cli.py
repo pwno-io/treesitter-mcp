@@ -5,6 +5,12 @@ from .core.language_manager import LanguageManager
 from .languages.python import PythonAnalyzer
 from .languages.c import CAnalyzer
 from .languages.cpp import CppAnalyzer
+from .languages.javascript import JavaScriptAnalyzer
+from .languages.php import PhpAnalyzer
+from .languages.rust import RustAnalyzer
+from .languages.typescript import TypeScriptAnalyzer
+from .languages.go import GoAnalyzer
+from .languages.java import JavaAnalyzer
 
 def main():
     parser = argparse.ArgumentParser(description="Tree-sitter Analysis CLI")
@@ -13,6 +19,10 @@ def main():
     parser.add_argument("--find-function", help="Find function by name")
     parser.add_argument("--find-variable", help="Find variable by name")
     parser.add_argument("--ast", action="store_true", help="Get AST")
+    parser.add_argument("--node-at", nargs=2, type=int, metavar=("ROW", "COL"), help="Get the AST node covering the given (row, col)")
+    parser.add_argument("--range", dest="range_points", nargs=4, type=int, metavar=("START_ROW", "START_COL", "END_ROW", "END_COL"), help="Get the AST node covering the given point range")
+    parser.add_argument("--cursor", nargs=2, type=int, metavar=("ROW", "COL"), help="Get a cursor-style view (ancestors/siblings/children) at a point")
+    parser.add_argument("--max-depth", type=int, default=-1, help="Limit AST depth for AST/node/range/cursor outputs (-1 for full)")
     parser.add_argument("--query", help="Run a tree-sitter query")
     parser.add_argument("--find-usage", help="Find usages of a symbol")
     parser.add_argument("--dependencies", action="store_true", help="Get dependencies")
@@ -32,6 +42,19 @@ def main():
         '.cxx': CppAnalyzer(language_manager),
         '.h': CppAnalyzer(language_manager),
         '.hpp': CppAnalyzer(language_manager),
+        '.js': JavaScriptAnalyzer(language_manager),
+        '.jsx': JavaScriptAnalyzer(language_manager),
+        '.mjs': JavaScriptAnalyzer(language_manager),
+        '.cjs': JavaScriptAnalyzer(language_manager),
+        '.php': PhpAnalyzer(language_manager),
+        '.phtml': PhpAnalyzer(language_manager),
+        '.rs': RustAnalyzer(language_manager),
+        '.ts': TypeScriptAnalyzer(language_manager),
+        '.tsx': TypeScriptAnalyzer(language_manager),
+        '.cts': TypeScriptAnalyzer(language_manager),
+        '.mts': TypeScriptAnalyzer(language_manager),
+        '.go': GoAnalyzer(language_manager),
+        '.java': JavaAnalyzer(language_manager),
     }
     
     ext = os.path.splitext(file_path)[1]
@@ -56,6 +79,21 @@ def main():
                 print(result.model_dump_json(indent=2))
             else:
                 print("Call graph not supported for this language", file=sys.stderr)
+        elif args.node_at:
+            row, col = args.node_at
+            node = tree.root_node.descendant_for_point_range((row, col), (row, col))
+            ast = analyzer._build_ast(node, code, max_depth=args.max_depth)
+            print(ast.model_dump_json(indent=2))
+        elif args.range_points:
+            s_row, s_col, e_row, e_col = args.range_points
+            node = tree.root_node.descendant_for_point_range((s_row, s_col), (e_row, e_col))
+            ast = analyzer._build_ast(node, code, max_depth=args.max_depth)
+            print(ast.model_dump_json(indent=2))
+        elif args.cursor:
+            row, col = args.cursor
+            view = analyzer.build_cursor_view(code, row=row, column=col, max_depth=max(0, args.max_depth if args.max_depth != -1 else 1))
+            import json
+            print(json.dumps(view, indent=2))
         elif args.find_function:
             if hasattr(analyzer, 'find_function'):
                 result = analyzer.find_function(tree.root_node, file_path, args.find_function)
@@ -69,7 +107,7 @@ def main():
             else:
                 print("Variable search not supported for this language", file=sys.stderr)
         elif args.ast:
-            ast = analyzer._build_ast(tree.root_node, code)
+            ast = analyzer._build_ast(tree.root_node, code, max_depth=args.max_depth)
             print(ast.model_dump_json(indent=2))
         elif args.query:
             results = analyzer.run_query(args.query, tree.root_node, code)

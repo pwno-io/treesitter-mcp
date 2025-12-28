@@ -12,6 +12,7 @@ class ASTNode(BaseModel):
     start_point: Point
     end_point: Point
     children: List['ASTNode'] = Field(default_factory=list)
+    field_name: Optional[str] = None
     text: Optional[str] = None
     id: Optional[int] = None
 

@@ -16,6 +16,12 @@ The core logic resides in the `BaseAnalyzer` class and its language-specific sub
 -   **`BaseAnalyzer`**: Defines the interface and common methods (`parse`, `_build_ast`, `run_query`).
 -   **`CAnalyzer` (`c.py`)**: Implements C-specific logic (call graphs, includes).
 -   **`CppAnalyzer` (`cpp.py`)**: Implements C++-specific logic.
+-   **`JavaScriptAnalyzer` (`javascript.py`)**: Implements JavaScript-specific logic.
+-   **`PhpAnalyzer` (`php.py`)**: Implements PHP-specific logic.
+-   **`RustAnalyzer` (`rust.py`)**: Implements Rust-specific logic.
+-   **`TypeScriptAnalyzer` (`typescript.py`)**: Implements TypeScript-specific logic.
+-   **`GoAnalyzer` (`go.py`)**: Implements Go-specific logic.
+-   **`JavaAnalyzer` (`java.py`)**: Implements Java-specific logic.
 -   **`PythonAnalyzer` (`python.py`)**: Implements Python-specific logic (imports).
 
 ### 3. Interfaces

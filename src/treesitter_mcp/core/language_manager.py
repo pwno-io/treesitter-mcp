@@ -1,5 +1,11 @@
 import tree_sitter_c
 import tree_sitter_cpp
+import tree_sitter_javascript
+import tree_sitter_php
+import tree_sitter_rust
+import tree_sitter_typescript
+import tree_sitter_go
+import tree_sitter_java
 import tree_sitter_python
 from tree_sitter import Language, Parser
 
@@ -10,6 +16,12 @@ class LanguageManager:
         self._languages = {
             'c': Language(tree_sitter_c.language()),
             'cpp': Language(tree_sitter_cpp.language()),
+            'javascript': Language(tree_sitter_javascript.language()),
+            'php': Language(tree_sitter_php.language_php()),
+            'rust': Language(tree_sitter_rust.language()),
+            'typescript': Language(tree_sitter_typescript.language_typescript()),
+            'go': Language(tree_sitter_go.language()),
+            'java': Language(tree_sitter_java.language()),
             'python': Language(tree_sitter_python.language()),
         }
         self._parsers = {}

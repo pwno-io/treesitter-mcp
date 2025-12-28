@@ -12,11 +12,11 @@ The server uses **stdio** transport. This means it communicates via standard inp
 
 First, install the package:
 ```bash
-cd /path/to/code-analysis
+cd /path/to/treesitter-mcp
 uv pip install -e .
 ```
 
-This installs the `code-analysis-server` command globally (in your Python environment).
+This installs the `treesitter-mcp` server command globally (in your Python environment). The standalone CLI is available as `treesitter`.
 
 ### Claude Desktop
 
@@ -25,8 +25,8 @@ Add the following to your `claude_desktop_config.json` (usually located at `~/Li
 ```json
 {
   "mcpServers": {
-    "code-analysis": {
-      "command": "code-analysis-server"
+    "treesitter-mcp": {
+      "command": "treesitter-mcp"
     }
   }
 }
@@ -36,8 +36,8 @@ Add the following to your `claude_desktop_config.json` (usually located at `~/Li
 ```json
 {
   "mcpServers": {
-    "code-analysis": {
-      "command": "/path/to/.venv/bin/code-analysis-server"
+    "treesitter-mcp": {
+      "command": "/path/to/.venv/bin/treesitter-mcp"
     }
   }
 }
@@ -48,7 +48,7 @@ Add the following to your `claude_desktop_config.json` (usually located at `~/Li
 If you are configuring a generic agent, the invocation command is:
 
 ```bash
-code-analysis-server
+treesitter-mcp
 ```
 
 The agent should communicate with this process via `stdin`/`stdout` using the JSON-RPC 2.0 protocol defined by MCP.
