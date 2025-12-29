@@ -201,3 +201,4 @@ class JavaAnalyzer(BaseAnalyzer):
 
         return dependencies
 
+

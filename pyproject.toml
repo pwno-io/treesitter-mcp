@@ -1,6 +1,6 @@
 [project]
 name = "treesitter-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "MCP server for code analysis using Tree-sitter"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -50,10 +50,8 @@ dev = [
 ]
 
 [project.scripts]
-# CLI renamed from `treesitter-mcp` to `treesitter`
-treesitter = "treesitter_mcp.cli:main"
-# MCP server renamed from `treesitter-mcp-server` to `treesitter-mcp`
-treesitter-mcp = "treesitter_mcp.server:main"
+# Main entry point - runs MCP server in stdio mode by default
+treesitter-mcp = "treesitter_mcp.cli.__main__:main"
 
 [build-system]
 requires = ["hatchling"]

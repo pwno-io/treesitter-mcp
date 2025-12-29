@@ -1,6 +1,6 @@
 # Tree-sitter MCP Server
 
-A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This tool provides capabilities to parse code, extract symbols, generate call graphs, find usages, and run custom queries against C, C++, JavaScript, PHP, Rust, TypeScript, Go, Java, and Python code.
+A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This tool provides capabilities to parse code, extract symbols, generate call graphs, find usages, and run custom queries against C, C++, and Python code.
 
 ## Features
 
@@ -10,76 +10,62 @@ A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This 
 -   **Tree-sitter Queries**: Run custom S-expression queries against your code.
 -   **Usage Finder**: Find usages of functions and variables.
 -   **Dependency Extraction**: List file dependencies (includes/imports).
--   **Multi-Language Support**: Currently supports C, C++, JavaScript, PHP, Rust, TypeScript, Go, Java, and Python.
+-   **Multi-Language Support**: Currently supports C, C++, and Python.
 
 ## Installation
 
-### Quick install (PyPI)
+### Prerequisites
 
+-   Python 3.10+
+-   `pip`
+
+### Setup
+
+1.  Clone the repository.
+2.  Install the package:
+    ```bash
+    # Using uv (recommended)
+    uv pip install -e .
+    
+    # Or using pip
+    pip install -e .
+    ```
+
+This will install the `treesitter-mcp` command-line tool.
+
+You can also run it directly without installation using `uvx`:
 ```bash
-pip install treesitter-mcp
-
-# or with uvx (no global install)
-uvx treesitter-mcp --help
-
-# or install the binary with uv tool
-uv tool install treesitter-mcp
-```
-
-This provides two commands:
--   `treesitter`: CLI for analyzing files
--   `treesitter-mcp`: MCP server
-
-Check available options:
-```bash
-treesitter --help
-treesitter-mcp --help
+uvx treesitter-mcp
 ```
 
 ## Usage
 
-### CLI
+### MCP Server (Default)
 
-The CLI is available as the `treesitter` command after installation.
-
-```bash
-treesitter <file_path> [options]
-```
-
-#### Examples
-
-**Get AST:**
-```bash
-treesitter test.c --ast
-```
-
-**Find Function Definition:**
-```bash
-treesitter test.c --find-function my_func
-```
-
-**Find Usages:**
-```bash
-treesitter test.c --find-usage my_func
-```
-
-**Get Dependencies:**
-```bash
-treesitter test.c --dependencies
-```
-
-**Run Custom Query:**
-```bash
-treesitter test.c --query "(function_definition) @func"
-```
-
-### MCP Server
-
-To run the MCP server:
+By default, `treesitter-mcp` runs as an MCP server in stdio mode:
 
 ```bash
 treesitter-mcp
 ```
+
+This is perfect for integrating with MCP clients like Claude Desktop. See `docs/MCP_USAGE.md` for configuration instructions.
+
+### HTTP Mode
+
+To run the server in HTTP mode for testing or development:
+
+```bash
+treesitter-mcp --http --port 8000 --host 127.0.0.1
+```
+
+### Example with uvx
+
+```bash
+# Run in stdio mode (default)
+uvx treesitter-mcp
+
+# Run in HTTP mode
+uvx treesitter-mcp --http --port 8000
 
 Configure your MCP client (e.g., Claude Desktop) to use this server. See `docs/MCP_USAGE.md` for detailed configuration instructions.
 
@@ -87,12 +73,6 @@ Configure your MCP client (e.g., Claude Desktop) to use this server. See `docs/M
 
 -   **C**: Full support (Symbols, Call Graph, Queries, Usage).
 -   **C++**: Full support.
--   **JavaScript**: Full support.
--   **PHP**: Full support.
--   **Rust**: Full support.
--   **TypeScript**: Full support.
--   **Go**: Full support.
--   **Java**: Full support.
 -   **Python**: Full support.
 
 ## Documentation

@@ -222,3 +222,4 @@ class PhpAnalyzer(BaseAnalyzer):
 
         return dependencies
 
+

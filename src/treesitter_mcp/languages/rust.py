@@ -215,3 +215,4 @@ class RustAnalyzer(BaseAnalyzer):
 
         return dependencies
 
+
