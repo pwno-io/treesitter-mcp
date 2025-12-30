@@ -36,6 +36,7 @@ dependencies = [
     "tree-sitter-go",
     "tree-sitter-java",
     "tree-sitter-python",
+    "tree-sitter-ruby",
     "pydantic",
 ]
 

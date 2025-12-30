@@ -7,12 +7,13 @@ import tree_sitter_typescript
 import tree_sitter_go
 import tree_sitter_java
 import tree_sitter_python
+import tree_sitter_ruby
 from tree_sitter import Language, Parser
 
 class LanguageManager:
     """Manages Tree-sitter languages and parsers."""
     def __init__(self):
-        """Initialize supported languages (C, C++, Python)."""
+        """Initialize supported languages (C, C++, Python, Ruby, etc)."""
         self._languages = {
             'c': Language(tree_sitter_c.language()),
             'cpp': Language(tree_sitter_cpp.language()),
@@ -23,6 +24,7 @@ class LanguageManager:
             'go': Language(tree_sitter_go.language()),
             'java': Language(tree_sitter_java.language()),
             'python': Language(tree_sitter_python.language()),
+            'ruby': Language(tree_sitter_ruby.language()),
         }
         self._parsers = {}
 
