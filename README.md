@@ -97,6 +97,7 @@ uvx treesitter-mcp
 uvx treesitter-mcp --http --port 8000
 
 Configure your MCP client (e.g., Claude Desktop) to use this server. See `docs/MCP_USAGE.md` for detailed configuration instructions.
+```
 
 ## Supported Languages
 
