@@ -4,36 +4,37 @@ A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This 
 
 ## Features
 
--   **AST Retrieval**: Get the full Abstract Syntax Tree (AST) of a file.
--   **Symbol Extraction**: Find function and variable definitions.
--   **Call Graph**: Generate function call graphs.
--   **Tree-sitter Queries**: Run custom S-expression queries against your code.
--   **Usage Finder**: Find usages of functions and variables.
--   **Dependency Extraction**: List file dependencies (includes/imports).
--   **Multi-Language Support**: Currently supports C, C++, Python, JavaScript, TypeScript, Go, Java, PHP, Rust, and Ruby.
+- **AST Retrieval**: Get the full Abstract Syntax Tree (AST) of a file.
+- **Symbol Extraction**: Find function and variable definitions.
+- **Call Graph**: Generate function call graphs.
+- **Tree-sitter Queries**: Run custom S-expression queries against your code.
+- **Usage Finder**: Find usages of functions and variables.
+- **Dependency Extraction**: List file dependencies (includes/imports).
+- **Multi-Language Support**: Currently supports C, C++, Python, JavaScript, TypeScript, Go, Java, PHP, Rust, and Ruby.
 
 ## Installation
 
 ### Prerequisites
 
--   Python 3.10+
--   `pip`
+- Python 3.10+
+- `pip`
 
 ### Setup
 
-1.  Clone the repository.
-2.  Install the package:
-    ```bash
-    # Using uv (recommended)
-    uv pip install -e .
-    
-    # Or using pip
-    pip install -e .
-    ```
+1. Clone the repository.
+2. Install the package:
+   ```bash
+   # Using uv (recommended)
+   uv pip install -e .
+
+   # Or using pip
+   pip install -e .
+   ```
 
 This will install the `treesitter-mcp` command-line tool.
 
 You can also run it directly without installation using `uvx`:
+
 ```bash
 uvx treesitter-mcp
 ```
@@ -132,6 +133,7 @@ Configure your MCP client (e.g., Claude Desktop) to use this server. See `docs/M
 ## Documentation
 
 See the `docs/` directory for more details:
--   [API Reference](docs/API.md)
--   [MCP Server Usage](docs/MCP_USAGE.md)
--   [Architecture](docs/ARCHITECTURE.md)
+
+- [API Reference](docs/API.md)
+- [MCP Server Usage](docs/MCP_USAGE.md)
+- [Architecture](docs/ARCHITECTURE.md)
