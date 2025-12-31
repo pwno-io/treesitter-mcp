@@ -92,10 +92,13 @@ class CAnalyzer(BaseAnalyzer):
                 call_query = Query(language, call_query_scm)
                 call_cursor = QueryCursor(call_query)
                 call_captures = call_cursor.captures(func_node)
-                
+
                 if 'call.name' in call_captures:
                     for call_node in call_captures['call.name']:
-                        calls.append(call_node.text.decode('utf8'))
+                        call_name = call_node.text.decode('utf8')
+                        # Filter out macro-like identifiers (all-uppercase or leading/trailing underscores)
+                        if call_name and not (call_name.isupper() or call_name.startswith('_') or call_name.endswith('_')):
+                            calls.append(call_name)
                 
                 nodes.append(CallGraphNode(
                     name=func_name,

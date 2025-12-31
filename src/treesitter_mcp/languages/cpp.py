@@ -93,7 +93,10 @@ class CppAnalyzer(BaseAnalyzer):
                     for call_capture_name, call_nodes in call_captures.items():
                         for call_node in call_nodes:
                             if call_capture_name == 'call.name':
-                                calls.append(call_node.text.decode('utf8'))
+                                call_name = call_node.text.decode('utf8')
+                                # Filter out macro-like identifiers (all-uppercase or leading/trailing underscores)
+                                if call_name and not (call_name.isupper() or call_name.startswith('_') or call_name.endswith('_')):
+                                    calls.append(call_name)
                             elif call_capture_name == 'call.method':
                                 calls.append(call_node.text.decode('utf8'))
 
