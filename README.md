@@ -58,6 +58,34 @@ To run the server in HTTP mode for testing or development:
 treesitter-mcp --http --port 8000 --host 127.0.0.1
 ```
 
+#### Selecting Specific Tools
+
+You can limit which tools are exposed by using the `--tools` argument. This is useful when you only need specific functionality:
+
+```bash
+# Expose only specific tools
+treesitter-mcp --http --port 8000 --tools treesitter_analyze_file,treesitter_get_ast
+
+# URL-based selection (e.g., for MCP clients)
+# http://127.0.0.1:8000?tools=treesitter_analyze_file,treesitter_get_ast
+```
+
+Available tool names:
+- `treesitter_analyze_file` - Analyze files and extract symbols
+- `treesitter_get_call_graph` - Generate function call graphs
+- `treesitter_find_function` - Search for function definitions
+- `treesitter_find_variable` - Search for variable declarations and usages
+- `treesitter_get_supported_languages` - List supported languages
+- `treesitter_get_ast` - Get the complete Abstract Syntax Tree
+- `treesitter_get_node_at_point` - Get AST node at a specific point
+- `treesitter_get_node_for_range` - Get AST node for a range
+- `treesitter_cursor_walk` - Cursor-style view with context
+- `treesitter_run_query` - Run custom Tree-sitter queries
+- `treesitter_find_usage` - Find all usages of a symbol
+- `treesitter_get_dependencies` - Extract file dependencies
+
+If `--tools` is not provided, all tools are exposed by default.
+
 ### Example with uvx
 
 ```bash
