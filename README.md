@@ -1,6 +1,6 @@
 # Tree-sitter MCP Server
 
-An MCP server that uses Tree-sitter to parse and analyze code. Works with 10 languages: C, C++, Python, JavaScript, TypeScript, Go, Java, PHP, Rust, and Ruby.
+An MCP server that uses Tree-sitter to parse and analyze code.
 
 ## What it does
 
@@ -16,15 +16,13 @@ An MCP server that uses Tree-sitter to parse and analyze code. Works with 10 lan
 Requires Python 3.10+.
 
 ```bash
-# Clone and install
-git clone <repo-url>
+# Install directly
+uv pip install treesitter-mcp
+
+# Or clone and install
+git clone https://github.com/pwno-io/treesitter-mcp.git
 cd treesitter-mcp
-
-# With uv (faster)
 uv pip install -e .
-
-# Or with pip
-pip install -e .
 ```
 
 Or run without installing:
