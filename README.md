@@ -104,16 +104,16 @@ Configure your MCP client (e.g., Claude Desktop) to use this server. See `docs/M
 
 | Language | analyze_file | get_ast | get_call_graph | find_function | find_variable | find_usage | get_dependencies |
 |----------|--------------|---------|----------------|---------------|---------------|------------|------------------|
-| C        | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| C++      | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| Python   | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| JavaScript | ✅         | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| TypeScript| ✅         | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| Go       | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| Java     | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| PHP      | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| Rust     | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
-| Ruby     | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| C        | [x]          | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| C++      | [x]          | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| Python   | [x]          | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| JavaScript | [x]        | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| TypeScript | [x]        | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| Go       | [x]          | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| Java     | [x]          | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| PHP      | [x]          | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| Rust     | [x]          | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
+| Ruby     | [x]          | [x]     | [x]            | [x]           | [x]           | [x]        | [x]              |
 
 ### Supported File Extensions
 
