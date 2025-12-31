@@ -1,16 +1,16 @@
 # Tree-sitter MCP Server
 
-A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This tool provides capabilities to parse code, extract symbols, generate call graphs, find usages, and run custom queries against C, C++, and Python code.
+A Model Context Protocol (MCP) server for code analysis using Tree-sitter. This tool provides capabilities to parse code, extract symbols, generate call graphs, find usages, and run custom queries against code in 10 programming languages.
 
 ## Features
 
 -   **AST Retrieval**: Get the full Abstract Syntax Tree (AST) of a file.
 -   **Symbol Extraction**: Find function and variable definitions.
--   **Call Graph**: Generate a call graph for C/C++ functions.
+-   **Call Graph**: Generate function call graphs.
 -   **Tree-sitter Queries**: Run custom S-expression queries against your code.
 -   **Usage Finder**: Find usages of functions and variables.
 -   **Dependency Extraction**: List file dependencies (includes/imports).
--   **Multi-Language Support**: Currently supports C, C++, and Python.
+-   **Multi-Language Support**: Currently supports C, C++, Python, JavaScript, TypeScript, Go, Java, PHP, Rust, and Ruby.
 
 ## Installation
 
@@ -71,9 +71,35 @@ Configure your MCP client (e.g., Claude Desktop) to use this server. See `docs/M
 
 ## Supported Languages
 
--   **C**: Full support (Symbols, Call Graph, Queries, Usage).
--   **C++**: Full support.
--   **Python**: Full support.
+### Language Feature Matrix
+
+| Language | analyze_file | get_ast | get_call_graph | find_function | find_variable | find_usage | get_dependencies |
+|----------|--------------|---------|----------------|---------------|---------------|------------|------------------|
+| C        | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| C++      | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| Python   | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| JavaScript | ✅         | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| TypeScript| ✅         | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| Go       | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| Java     | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| PHP      | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| Rust     | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+| Ruby     | ✅           | ✅      | ✅             | ✅            | ✅            | ✅         | ✅               |
+
+### Supported File Extensions
+
+| Language | Extensions |
+|----------|------------|
+| C        | `.c` |
+| C++      | `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp` |
+| Python   | `.py` |
+| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` |
+| TypeScript | `.ts`, `.tsx`, `.cts`, `.mts` |
+| Go       | `.go` |
+| Java     | `.java` |
+| PHP      | `.php`, `.phtml` |
+| Rust     | `.rs` |
+| Ruby     | `.rb` |
 
 ## Documentation
 

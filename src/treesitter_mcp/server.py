@@ -9,6 +9,7 @@ from .languages.rust import RustAnalyzer
 from .languages.typescript import TypeScriptAnalyzer
 from .languages.go import GoAnalyzer
 from .languages.java import JavaAnalyzer
+from .languages.ruby import RubyAnalyzer
 
 import os
 import sys
@@ -27,6 +28,7 @@ analyzers = {
     'typescript': TypeScriptAnalyzer(language_manager),
     'go': GoAnalyzer(language_manager),
     'java': JavaAnalyzer(language_manager),
+    'ruby': RubyAnalyzer(language_manager),
 }
 
 def get_analyzer(file_path: str):
@@ -57,6 +59,8 @@ def get_analyzer(file_path: str):
         return analyzers['go']
     elif ext == '.java':
         return analyzers['java']
+    elif ext == '.rb':
+        return analyzers['ruby']
     return None
 
 def normalize_path(file_path: str) -> str:
