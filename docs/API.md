@@ -1,5 +1,13 @@
 # API Reference
 
+## Common Parameters
+
+All MCP tools accept an optional `output_file` parameter:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `output_file` | string (optional) | If provided, writes the result to this file path instead of returning. Returns `{"status": "written", "output_file": "...", "bytes_written": N}` on success. |
+
 ## CLI Arguments
 
 The CLI (`src/treesitter_mcp/cli.py`) supports the following arguments:
@@ -21,22 +29,22 @@ The MCP server (`src/treesitter_mcp/server.py`) exposes the following tools:
 
 ### `get_ast`
 Returns the Abstract Syntax Tree of a file.
-- **Arguments**: `file_path` (string)
+- **Arguments**: `file_path` (string), `max_depth` (int, optional; default -1), `output_file` (string, optional)
 - **Returns**: JSON string of the AST.
 
 ### `get_node_at_point`
 Returns the smallest AST node covering a specific point.
-- **Arguments**: `file_path` (string), `row` (int), `column` (int), `max_depth` (int, optional; default 0)
+- **Arguments**: `file_path` (string), `row` (int), `column` (int), `max_depth` (int, optional; default 0), `output_file` (string, optional)
 - **Returns**: JSON AST node (includes field names).
 
 ### `get_node_for_range`
 Returns the smallest AST node covering a point range.
-- **Arguments**: `file_path` (string), `start_row` (int), `start_column` (int), `end_row` (int), `end_column` (int), `max_depth` (int, optional; default 0)
+- **Arguments**: `file_path` (string), `start_row` (int), `start_column` (int), `end_row` (int), `end_column` (int), `max_depth` (int, optional; default 0), `output_file` (string, optional)
 - **Returns**: JSON AST node (includes field names).
 
 ### `cursor_walk`
 Returns a cursor-style snapshot (focus node + ancestors/siblings/children) at a point.
-- **Arguments**: `file_path` (string), `row` (int), `column` (int), `max_depth` (int, optional; default 1)
+- **Arguments**: `file_path` (string), `row` (int), `column` (int), `max_depth` (int, optional; default 1), `output_file` (string, optional)
 - **Returns**: JSON object with `focus`, `ancestors`, `siblings`, and `children`.
 
 ### `run_query`
@@ -45,6 +53,7 @@ Executes a Tree-sitter query against a file.
     - `query` (string): The S-expression query.
     - `file_path` (string): Path to the file.
     - `language` (string, optional): Language override.
+    - `output_file` (string, optional)
 - **Returns**: JSON string of captures.
 
 ### `find_usage`
@@ -52,35 +61,41 @@ Finds usages of a symbol.
 - **Arguments**:
     - `name` (string): Symbol name.
     - `file_path` (string): Path to the file.
+    - `language` (string, optional): Language override.
+    - `output_file` (string, optional)
 - **Returns**: JSON string of search results.
 
 ### `get_dependencies`
 Gets file dependencies.
-- **Arguments**: `file_path` (string)
+- **Arguments**: `file_path` (string), `output_file` (string, optional)
 - **Returns**: JSON list of dependency strings.
 
 ### `analyze_file`
 Performs a default analysis (symbols extraction).
-- **Arguments**: `file_path` (string)
+- **Arguments**: `file_path` (string), `output_file` (string, optional)
 - **Returns**: JSON string of analysis results.
 
 ### `get_call_graph`
 Generates a call graph.
-- **Arguments**: `file_path` (string)
+- **Arguments**: `file_path` (string), `output_file` (string, optional)
 - **Returns**: JSON string of the call graph.
 
 ### `find_function`
 Finds a function definition.
 - **Arguments**:
-    - `name` (string): Function name.
     - `file_path` (string): Path to the file.
+    - `name` (string): Function name.
+    - `include_source` (bool, optional): If true, includes source code for each match.
+    - `output_file` (string, optional)
 - **Returns**: JSON string of search results.
 
 ### `find_variable`
 Finds a variable.
 - **Arguments**:
-    - `name` (string): Variable name.
     - `file_path` (string): Path to the file.
+    - `name` (string): Variable name.
+    - `include_source` (bool, optional): If true, includes source code for each match.
+    - `output_file` (string, optional)
 - **Returns**: JSON string of search results.
 
 ### `get_source_for_range`
@@ -91,4 +106,10 @@ Extracts source code for a specific line/column range.
     - `start_column` (int): Starting column number (0-based).
     - `end_row` (int): Ending line number (0-based).
     - `end_column` (int): Ending column number (0-based).
+    - `output_file` (string, optional)
 - **Returns**: JSON object with `file_path`, `range`, and `source` fields containing the extracted code text.
+
+### `get_supported_languages`
+Lists supported programming languages.
+- **Arguments**: `output_file` (string, optional)
+- **Returns**: List of language names (e.g., ['python', 'c', 'cpp']).

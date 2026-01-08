@@ -72,6 +72,37 @@ Or via URL query param: `http://127.0.0.1:8000?tools=treesitter_analyze_file,tre
 
 If you don't specify `--tools`, everything is exposed.
 
+### Writing output to file
+
+All tools support an optional `output_file` parameter. When provided, the tool
+writes its result directly to the specified file (as pretty-printed JSON) instead
+of returning it. This is useful for large outputs like ASTs that could cause
+context overload in agents.
+
+Example:
+```python
+# Returns result to file, minimal response to agent
+treesitter_get_ast(file_path="large_file.py", output_file="~/output/ast.json")
+# Returns: {"status": "written", "output_file": "/home/user/output/ast.json", "bytes_written": 123456}
+```
+
+The tool will:
+- Automatically create parent directories if they don't exist
+- Expand `~` to your home directory
+- Warn (to stderr) if overwriting an existing file
+- Return a minimal confirmation dict on success, or an error dict if writing fails
+
+### Including source code in results
+
+The `treesitter_find_function` and `treesitter_find_variable` tools support an
+optional `include_source` parameter. When set to `True`, each matched symbol
+includes its source code in the result:
+
+```python
+treesitter_find_function(file_path="server.py", name="main", include_source=True)
+# Returns: {"query": "main", "matches": [{"name": "main", ..., "source": "def main():\n    ..."}]}
+```
+
 ## Language support
 
 | Language | analyze_file | get_ast | get_call_graph | find_function | find_variable | find_usage | get_dependencies |

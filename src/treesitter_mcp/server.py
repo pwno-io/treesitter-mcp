@@ -14,6 +14,7 @@ from .languages.ruby import RubyAnalyzer
 import os
 import sys
 from typing import Any, Optional
+import orjson
 
 mcp = FastMCP("tree-sitter-analysis")
 language_manager = LanguageManager()
@@ -74,6 +75,40 @@ def normalize_path(file_path: str) -> str:
     return os.path.abspath(os.path.expanduser(file_path.strip()))
 
 
+def write_output_file(output_file: str, data: Any) -> dict:
+    """Write result data to file efficiently using orjson.
+
+    Args:
+        output_file: Path to write the output to
+        data: Data to serialize and write (dict, list, or Pydantic model)
+
+    Returns:
+        Success dict with file path and bytes written, or error dict
+    """
+    try:
+        output_path = normalize_path(output_file)
+        parent_dir = os.path.dirname(output_path)
+
+        if os.path.exists(output_path):
+            print(f"Warning: Overwriting existing file: {output_path}", file=sys.stderr)
+
+        if parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
+
+        json_bytes = orjson.dumps(data, option=orjson.OPT_INDENT_2)
+
+        with open(output_path, "wb") as f:
+            bytes_written = f.write(json_bytes)
+
+        return {
+            "status": "written",
+            "output_file": output_path,
+            "bytes_written": bytes_written,
+        }
+    except Exception as e:
+        return {"error": f"Failed to write output file: {str(e)}"}
+
+
 def should_register_tool(tool_name: str) -> bool:
     """Check if a tool should be registered based on --tools selection."""
     if selected_tools is None:
@@ -94,11 +129,13 @@ def mcp_tool_if_enabled(tool_name: str):
 
 
 @mcp_tool_if_enabled("treesitter_analyze_file")
-def treesitter_analyze_file(file_path: str) -> Any:
+def treesitter_analyze_file(file_path: str, output_file: Optional[str] = None) -> Any:
     """Analyze a source code file and extract symbols (functions, classes, etc.).
 
     Args:
         file_path: Path to the source code file to analyze (supports .py, .c, .cpp, .h, .hpp)
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         Dictionary containing:
@@ -106,6 +143,7 @@ def treesitter_analyze_file(file_path: str) -> Any:
         - language: Detected programming language
         - symbols: List of extracted symbols (functions, classes, etc.)
         - errors: Any parsing errors encountered
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
 
     Note: This function does not return the full AST to avoid serialization issues.
     Use treesitter_get_ast() if you need the complete AST.
@@ -126,20 +164,23 @@ def treesitter_analyze_file(file_path: str) -> Any:
         result = analyzer.analyze(file_path, code)
         result_dict = result.model_dump()
 
-        # Remove the AST to avoid protobuf serialization issues with large files
         result_dict.pop("ast", None)
 
+        if output_file:
+            return write_output_file(output_file, result_dict)
         return result_dict
     except Exception as e:
         return {"error": f"Error analyzing file: {str(e)}"}
 
 
 @mcp_tool_if_enabled("treesitter_get_call_graph")
-def treesitter_get_call_graph(file_path: str) -> Any:
+def treesitter_get_call_graph(file_path: str, output_file: Optional[str] = None) -> Any:
     """Generate a call graph showing function calls and their relationships.
 
     Args:
         file_path: Path to the source code file
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         Dictionary containing:
@@ -147,6 +188,7 @@ def treesitter_get_call_graph(file_path: str) -> Any:
           - name: Function name
           - location: Source location (start/end points)
           - calls: List of function names called by this function
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
 
     try:
@@ -166,6 +208,8 @@ def treesitter_get_call_graph(file_path: str) -> Any:
             result = analyzer.get_call_graph(tree.root_node, file_path)
             result_dict = result.model_dump()
 
+            if output_file:
+                return write_output_file(output_file, result_dict)
             return result_dict
         else:
             return {"error": "Call graph not supported for this language"}
@@ -174,17 +218,27 @@ def treesitter_get_call_graph(file_path: str) -> Any:
 
 
 @mcp_tool_if_enabled("treesitter_find_function")
-def treesitter_find_function(file_path: str, name: str) -> Any:
+def treesitter_find_function(
+    file_path: str,
+    name: str,
+    include_source: bool = False,
+    output_file: Optional[str] = None,
+) -> Any:
     """Search for a specific function definition by name.
 
     Args:
         file_path: Path to the source code file
         name: Name of the function to find
+        include_source: If True, includes the source code for each matched function.
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         Dictionary containing:
         - query: The search query (function name)
-        - matches: List of Symbol objects representing matching function definitions
+        - matches: List of Symbol objects representing matching function definitions.
+                   If include_source is True, each match includes a "source" field.
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
 
     try:
@@ -204,6 +258,21 @@ def treesitter_find_function(file_path: str, name: str) -> Any:
             result = analyzer.find_function(tree.root_node, file_path, name)
             result_dict = result.model_dump()
 
+            if include_source and result_dict.get("matches"):
+                for match in result_dict["matches"]:
+                    loc = match.get("location", {})
+                    start = loc.get("start", {})
+                    end = loc.get("end", {})
+                    match["source"] = analyzer.get_source_for_range(
+                        code,
+                        start_row=start.get("row", 0),
+                        start_col=start.get("column", 0),
+                        end_row=end.get("row", 0),
+                        end_col=end.get("column", 0),
+                    )
+
+            if output_file:
+                return write_output_file(output_file, result_dict)
             return result_dict
         else:
             return {"error": "Function search not supported for this language"}
@@ -212,17 +281,27 @@ def treesitter_find_function(file_path: str, name: str) -> Any:
 
 
 @mcp_tool_if_enabled("treesitter_find_variable")
-def treesitter_find_variable(file_path: str, name: str) -> Any:
+def treesitter_find_variable(
+    file_path: str,
+    name: str,
+    include_source: bool = False,
+    output_file: Optional[str] = None,
+) -> Any:
     """Search for variable declarations and usages by name.
 
     Args:
         file_path: Path to the source code file
         name: Name of the variable to find
+        include_source: If True, includes the source code for each matched variable.
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         Dictionary containing:
         - query: The search query (variable name)
-        - matches: List of Symbol objects representing variable declarations and usages
+        - matches: List of Symbol objects representing variable declarations and usages.
+                   If include_source is True, each match includes a "source" field.
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
 
     try:
@@ -242,6 +321,21 @@ def treesitter_find_variable(file_path: str, name: str) -> Any:
             result = analyzer.find_variable(tree.root_node, file_path, name)
             result_dict = result.model_dump()
 
+            if include_source and result_dict.get("matches"):
+                for match in result_dict["matches"]:
+                    loc = match.get("location", {})
+                    start = loc.get("start", {})
+                    end = loc.get("end", {})
+                    match["source"] = analyzer.get_source_for_range(
+                        code,
+                        start_row=start.get("row", 0),
+                        start_col=start.get("column", 0),
+                        end_row=end.get("row", 0),
+                        end_col=end.get("column", 0),
+                    )
+
+            if output_file:
+                return write_output_file(output_file, result_dict)
             return result_dict
         else:
             return {"error": "Variable search not supported for this language"}
@@ -250,28 +344,39 @@ def treesitter_find_variable(file_path: str, name: str) -> Any:
 
 
 @mcp_tool_if_enabled("treesitter_get_supported_languages")
-def treesitter_get_supported_languages() -> list[str]:
+def treesitter_get_supported_languages(output_file: Optional[str] = None) -> Any:
     """Get a list of programming languages supported by the analyzer.
+
+    Args:
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         List of supported language names (e.g., ['python', 'c', 'cpp'])
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
 
     try:
         result = list(analyzers.keys())
+        if output_file:
+            return write_output_file(output_file, result)
         return result
     except Exception as e:
         return []
 
 
 @mcp_tool_if_enabled("treesitter_get_ast")
-def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
+def treesitter_get_ast(
+    file_path: str, max_depth: int = -1, output_file: Optional[str] = None
+) -> Any:
     """Extract the complete Abstract Syntax Tree (AST) from a source file.
 
     Args:
         file_path: Path to the source code file
         max_depth: Maximum depth of the AST to return. -1 for no limit (default).
                    Useful for large files to avoid serialization errors.
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         Dictionary representing the AST root node with:
@@ -281,6 +386,7 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
         - children: List of child AST nodes
         - text: Optional text content
         - id: Optional node identifier
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
 
     try:
@@ -299,6 +405,8 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
         ast = analyzer._build_ast(tree.root_node, code, max_depth=max_depth)
         result_dict = ast.model_dump()
 
+        if output_file:
+            return write_output_file(output_file, result_dict)
         return result_dict
     except Exception as e:
         return {"error": f"Error getting AST: {str(e)}"}
@@ -306,9 +414,26 @@ def treesitter_get_ast(file_path: str, max_depth: int = -1) -> Any:
 
 @mcp_tool_if_enabled("treesitter_get_node_at_point")
 def treesitter_get_node_at_point(
-    file_path: str, row: int, column: int, max_depth: int = 0
+    file_path: str,
+    row: int,
+    column: int,
+    max_depth: int = 0,
+    output_file: Optional[str] = None,
 ) -> Any:
-    """Return the AST node covering a specific point (row, column)."""
+    """Return the AST node covering a specific point (row, column).
+
+    Args:
+        file_path: Path to the source code file
+        row: Row number (0-based)
+        column: Column number (0-based)
+        max_depth: Maximum depth of the AST to return. 0 for just the node.
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
+
+    Returns:
+        AST node as dictionary
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
+    """
     try:
         file_path = normalize_path(file_path)
         if not os.path.exists(file_path):
@@ -324,7 +449,10 @@ def treesitter_get_node_at_point(
         ast = analyzer.build_node_at_point(
             code, row=row, column=column, max_depth=max_depth
         )
-        return ast.model_dump()
+        result_dict = ast.model_dump()
+        if output_file:
+            return write_output_file(output_file, result_dict)
+        return result_dict
     except Exception as e:
         return {"error": f"Error getting node at point: {str(e)}"}
 
@@ -337,8 +465,24 @@ def treesitter_get_node_for_range(
     end_row: int,
     end_column: int,
     max_depth: int = 0,
+    output_file: Optional[str] = None,
 ) -> Any:
-    """Return the smallest AST node covering a point range."""
+    """Return the smallest AST node covering a point range.
+
+    Args:
+        file_path: Path to the source code file
+        start_row: Starting row (0-based)
+        start_column: Starting column (0-based)
+        end_row: Ending row (0-based)
+        end_column: Ending column (0-based)
+        max_depth: Maximum depth of the AST to return. 0 for just the node.
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
+
+    Returns:
+        AST node as dictionary
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
+    """
     try:
         file_path = normalize_path(file_path)
         if not os.path.exists(file_path):
@@ -359,16 +503,36 @@ def treesitter_get_node_for_range(
             end_col=end_column,
             max_depth=max_depth,
         )
-        return ast.model_dump()
+        result_dict = ast.model_dump()
+        if output_file:
+            return write_output_file(output_file, result_dict)
+        return result_dict
     except Exception as e:
         return {"error": f"Error getting node for range: {str(e)}"}
 
 
 @mcp_tool_if_enabled("treesitter_cursor_walk")
 def treesitter_cursor_walk(
-    file_path: str, row: int, column: int, max_depth: int = 1
+    file_path: str,
+    row: int,
+    column: int,
+    max_depth: int = 1,
+    output_file: Optional[str] = None,
 ) -> Any:
-    """Return a cursor-style view (focus node + context) at a point."""
+    """Return a cursor-style view (focus node + context) at a point.
+
+    Args:
+        file_path: Path to the source code file
+        row: Row number (0-based)
+        column: Column number (0-based)
+        max_depth: Maximum depth of the AST to return.
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
+
+    Returns:
+        Dictionary with focus, ancestors, siblings, and children
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
+    """
     try:
         file_path = normalize_path(file_path)
         if not os.path.exists(file_path):
@@ -384,6 +548,8 @@ def treesitter_cursor_walk(
         result = analyzer.build_cursor_view(
             code, row=row, column=column, max_depth=max_depth
         )
+        if output_file:
+            return write_output_file(output_file, result)
         return result
     except Exception as e:
         return {"error": f"Error walking cursor: {str(e)}"}
@@ -396,6 +562,7 @@ def treesitter_get_source_for_range(
     start_column: int,
     end_row: int,
     end_column: int,
+    output_file: Optional[str] = None,
 ) -> Any:
     """Extract the source code text for a given line/column range.
 
@@ -405,12 +572,15 @@ def treesitter_get_source_for_range(
         start_column: Starting column number (0-based)
         end_row: Ending line number (0-based)
         end_column: Ending column number (0-based)
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         Dictionary containing:
         - file_path: The analyzed file path
         - range: The requested range
         - source: The extracted source code text
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
     try:
         file_path = normalize_path(file_path)
@@ -432,7 +602,7 @@ def treesitter_get_source_for_range(
             end_col=end_column,
         )
 
-        return {
+        result = {
             "file_path": file_path,
             "range": {
                 "start": {"row": start_row, "column": start_column},
@@ -440,25 +610,33 @@ def treesitter_get_source_for_range(
             },
             "source": source,
         }
+        if output_file:
+            return write_output_file(output_file, result)
+        return result
     except Exception as e:
         return {"error": f"Error getting source for range: {str(e)}"}
 
 
 @mcp_tool_if_enabled("treesitter_run_query")
-def treesitter_run_query(query: str, file_path: str, language: str = None) -> Any:
+def treesitter_run_query(
+    query: str,
+    file_path: str,
+    language: Optional[str] = None,
+    output_file: Optional[str] = None,
+) -> Any:
     """Execute a custom Tree-sitter query against a source file.
 
     Args:
         query: Tree-sitter query string in S-expression format
         file_path: Path to the source code file
         language: Optional language override (auto-detected from file extension if not provided)
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         Query results as a dictionary or list, depending on the query structure
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
-
-    # If language is provided, we could potentially force it, but usually file extension is enough.
-    # The request mentioned language="c", so we should handle it if passed, or rely on file path.
 
     try:
         file_path = normalize_path(file_path)
@@ -475,24 +653,34 @@ def treesitter_run_query(query: str, file_path: str, language: str = None) -> An
         tree = analyzer.parse(code)
         results = analyzer.run_query(query, tree.root_node, code)
 
+        if output_file:
+            return write_output_file(output_file, results)
         return results
     except Exception as e:
         return {"error": f"Error running query: {str(e)}"}
 
 
 @mcp_tool_if_enabled("treesitter_find_usage")
-def treesitter_find_usage(name: str, file_path: str, language: str = None) -> Any:
+def treesitter_find_usage(
+    name: str,
+    file_path: str,
+    language: Optional[str] = None,
+    output_file: Optional[str] = None,
+) -> Any:
     """Find all usages/references of a symbol (identifier) in a source file.
 
     Args:
         name: Symbol name to search for
         file_path: Path to the source code file
         language: Optional language override (auto-detected from file extension if not provided)
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         Dictionary containing:
         - query: The search query (symbol name)
         - matches: List of Symbol objects representing all usages of the symbol
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
 
     try:
@@ -511,22 +699,29 @@ def treesitter_find_usage(name: str, file_path: str, language: str = None) -> An
         result = analyzer.find_usage(tree.root_node, file_path, name)
         result_dict = result.model_dump()
 
+        if output_file:
+            return write_output_file(output_file, result_dict)
         return result_dict
     except Exception as e:
         return {"error": f"Error finding usage: {str(e)}"}
 
 
 @mcp_tool_if_enabled("treesitter_get_dependencies")
-def treesitter_get_dependencies(file_path: str) -> Any:
+def treesitter_get_dependencies(
+    file_path: str, output_file: Optional[str] = None
+) -> Any:
     """Extract all dependencies (imports/includes) from a source file.
 
     Args:
         file_path: Path to the source code file
+        output_file: If provided, writes result to this file instead of returning.
+                     Useful for large outputs to prevent context overload.
 
     Returns:
         List of dependency strings:
         - For Python: import module names
         - For C/C++: included file paths (without quotes/brackets)
+        OR if output_file is set: {"status": "written", "output_file": "...", "bytes_written": N}
     """
 
     try:
@@ -544,6 +739,8 @@ def treesitter_get_dependencies(file_path: str) -> Any:
         tree = analyzer.parse(code)
         dependencies = analyzer.get_dependencies(tree.root_node, file_path)
 
+        if output_file:
+            return write_output_file(output_file, dependencies)
         return dependencies
     except Exception as e:
         return {"error": f"Error getting dependencies: {str(e)}"}
@@ -552,7 +749,6 @@ def treesitter_get_dependencies(file_path: str) -> Any:
 def main():
     """Main entry point for the MCP server."""
     import argparse
-    import sys
 
     parser = argparse.ArgumentParser(description="Code Analysis MCP Server")
     parser.add_argument(

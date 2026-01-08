@@ -38,6 +38,7 @@ dependencies = [
     "tree-sitter-python",
     "tree-sitter-ruby",
     "pydantic",
+    "orjson>=3.9.0",
 ]
 
 [project.urls]
