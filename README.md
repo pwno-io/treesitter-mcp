@@ -10,6 +10,7 @@ An MCP server that uses Tree-sitter to parse and analyze code.
 - Find where functions/variables are used
 - Run custom Tree-sitter queries
 - List imports/includes
+- Extract source code for specific line/column ranges
 
 ## Install
 
@@ -54,19 +55,20 @@ treesitter-mcp --http --port 8000 --tools treesitter_analyze_file,treesitter_get
 
 Or via URL query param: `http://127.0.0.1:8000?tools=treesitter_analyze_file,treesitter_get_ast`
 
-Tools available:
-- `treesitter_analyze_file` - Basic analysis
-- `treesitter_get_ast` - Full AST
-- `treesitter_get_call_graph` - Function calls
-- `treesitter_find_function` - Find function definitions
-- `treesitter_find_variable` - Find variables
-- `treesitter_get_supported_languages` - What's supported
-- `treesitter_get_node_at_point` - AST node at a line/column
-- `treesitter_get_node_for_range` - AST node for a range
-- `treesitter_cursor_walk` - Walk tree with context
-- `treesitter_run_query` - Custom Tree-sitter queries
-- `treesitter_find_usage` - Find symbol usages
-- `treesitter_get_dependencies` - Extract imports/includes
+ Tools available:
+ - `treesitter_analyze_file` - Basic analysis
+ - `treesitter_get_ast` - Full AST
+ - `treesitter_get_call_graph` - Function calls
+ - `treesitter_find_function` - Find function definitions
+ - `treesitter_find_variable` - Find variables
+ - `treesitter_get_source_for_range` - Extract source code for a range
+ - `treesitter_get_supported_languages` - What's supported
+ - `treesitter_get_node_at_point` - AST node at a line/column
+ - `treesitter_get_node_for_range` - AST node for a range
+ - `treesitter_cursor_walk` - Walk tree with context
+ - `treesitter_run_query` - Custom Tree-sitter queries
+ - `treesitter_find_usage` - Find symbol usages
+ - `treesitter_get_dependencies` - Extract imports/includes
 
 If you don't specify `--tools`, everything is exposed.
 

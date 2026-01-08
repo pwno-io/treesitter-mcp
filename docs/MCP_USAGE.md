@@ -114,9 +114,13 @@ When connected, the agent will have access to the following tools:
     -   *Agent Usage*: "Get the AST node covering lines 10-20 in `src/main.c`."
     -   *Returns*: Smallest AST node covering the range.
 
-12. **`treesitter_cursor_walk(file_path: str, row: int, column: int, max_depth: int = 1)`**:
-    -   *Agent Usage*: "Get a cursor view at line 10, column 5 in `src/main.c`."
-    -   *Returns*: Cursor-style view with focus node and context.
+ 12. **`treesitter_cursor_walk(file_path: str, row: int, column: int, max_depth: int = 1)`**:
+     - *Agent Usage*: "Get a cursor view at line 10, column 5 in `src/main.c`."
+     - *Returns*: Cursor-style view with focus node and context.
+
+ 13. **`treesitter_get_source_for_range(file_path: str, start_row: int, start_column: int, end_row: int, end_column: int)`**:
+     - *Agent Usage*: "Get the source code for the function at lines 5-15 in `src/main.c`."
+     - *Returns*: The actual source code text for the specified range.
 
 ## Example Agent Workflow
 
@@ -124,3 +128,56 @@ When connected, the agent will have access to the following tools:
 2.  **Agent**: Calls `treesitter_get_call_graph(file_path="test.c")`.
 3.  **Server**: Returns JSON call graph.
 4.  **Agent**: Interprets JSON and answers: "`main` calls `helper` and `printf`."
+
+## Example: Getting Symbol Source Code
+
+The `treesitter_get_source_for_range` tool allows agents to extract actual source code for symbols they discover. This is useful for providing complete code context in reports.
+
+1.  **User**: "Show me the implementation of the `factorial` function in `test.py`."
+2.  **Agent**: First, finds the function:
+    ```python
+    treesitter_find_function(file_path="test.py", name="factorial")
+    ```
+3.  **Server**: Returns the function's location:
+    ```json
+    {
+      "matches": [{
+        "name": "factorial",
+        "kind": "function",
+        "location": {
+          "start": {"row": 7, "column": 0},
+          "end": {"row": 11, "column": 28}
+        },
+        "file_path": "test.py"
+      }]
+    }
+    ```
+4.  **Agent**: Extracts the source code using the location:
+    ```python
+    treesitter_get_source_for_range(
+      file_path="test.py",
+      start_row=7, start_column=0,
+      end_row=11, end_column=28
+    )
+    ```
+5.  **Server**: Returns the actual source code:
+    ```json
+    {
+      "file_path": "test.py",
+      "range": {
+        "start": {"row": 7, "column": 0},
+        "end": {"row": 11, "column": 28}
+      },
+      "source": "def factorial(n: int) -> int:\n    \"\"\"Calculate factorial of n.\"\"\"\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n"
+    }
+    ```
+6.  **Agent**: Formats the response:
+    ```
+    Found function `factorial` at test.py:8-12
+
+    def factorial(n: int) -> int:
+        """Calculate factorial of n."""
+        if n <= 1:
+            return 1
+        return n * factorial(n - 1)
+    ```

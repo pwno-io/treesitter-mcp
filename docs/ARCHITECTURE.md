@@ -13,7 +13,7 @@ Responsible for loading Tree-sitter languages and parsers.
 
 ### 2. Analyzers (`src/treesitter_mcp/core/analyzer.py` & `src/treesitter_mcp/languages/`)
 The core logic resides in the `BaseAnalyzer` class and its language-specific subclasses.
--   **`BaseAnalyzer`**: Defines the interface and common methods (`parse`, `_build_ast`, `run_query`).
+-   **`BaseAnalyzer`**: Defines the interface and common methods (`parse`, `_build_ast`, `run_query`, `get_source_for_range`).
 -   **`CAnalyzer` (`c.py`)**: Implements C-specific logic (call graphs, includes).
 -   **`CppAnalyzer` (`cpp.py`)**: Implements C++-specific logic.
 -   **`JavaScriptAnalyzer` (`javascript.py`)**: Implements JavaScript-specific logic.

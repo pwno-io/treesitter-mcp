@@ -82,3 +82,13 @@ Finds a variable.
     - `name` (string): Variable name.
     - `file_path` (string): Path to the file.
 - **Returns**: JSON string of search results.
+
+### `get_source_for_range`
+Extracts source code for a specific line/column range.
+- **Arguments**:
+    - `file_path` (string): Path to the file.
+    - `start_row` (int): Starting line number (0-based).
+    - `start_column` (int): Starting column number (0-based).
+    - `end_row` (int): Ending line number (0-based).
+    - `end_column` (int): Ending column number (0-based).
+- **Returns**: JSON object with `file_path`, `range`, and `source` fields containing the extracted code text.

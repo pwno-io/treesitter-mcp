@@ -3,11 +3,13 @@ from typing import List, Dict, Any, Optional
 from tree_sitter import Node, Tree
 from .models import AnalysisResult, ASTNode, Point, Symbol, CallGraph, SearchResult
 
+
 class BaseAnalyzer(ABC):
     """Abstract base class for language-specific analyzers."""
+
     def __init__(self, language_manager):
         """Initialize the analyzer with a language manager.
-        
+
         Args:
             language_manager: Instance of LanguageManager
         """
@@ -20,10 +22,10 @@ class BaseAnalyzer(ABC):
 
     def parse(self, code: str) -> Tree:
         """Parse source code into a Tree-sitter tree.
-        
+
         Args:
             code: Source code as string
-            
+
         Returns:
             Tree-sitter Tree object
         """
@@ -32,40 +34,49 @@ class BaseAnalyzer(ABC):
 
     def analyze(self, file_path: str, code: str) -> AnalysisResult:
         """Perform comprehensive analysis on the code.
-        
+
         Args:
             file_path: Path to the file
             code: Source code content
-            
+
         Returns:
             AnalysisResult containing AST, symbols, etc.
         """
         tree = self.parse(code)
         ast = self._build_ast(tree.root_node, code)
         symbols = self.extract_symbols(tree.root_node, file_path)
-        
+
         return AnalysisResult(
             file_path=file_path,
             language=self.get_language_name(),
             ast=ast,
-            symbols=symbols
+            symbols=symbols,
         )
 
-    def _build_ast(self, node: Node, code: str, depth: int = 0, max_depth: int = -1, field_name: Optional[str] = None) -> ASTNode:
+    def _build_ast(
+        self,
+        node: Node,
+        code: str,
+        depth: int = 0,
+        max_depth: int = -1,
+        field_name: Optional[str] = None,
+    ) -> ASTNode:
         """Recursively build a simplified AST from the Tree-sitter tree."""
         start = Point(row=node.start_point[0], column=node.start_point[1])
         end = Point(row=node.end_point[0], column=node.end_point[1])
-        
+
         children: List[ASTNode] = []
         if max_depth == -1 or depth < max_depth:
             for idx, child in enumerate(node.children):
                 child_field_name = node.field_name_for_child(idx)
-                child_ast = self._build_ast(child, code, depth + 1, max_depth, field_name=child_field_name)
+                child_ast = self._build_ast(
+                    child, code, depth + 1, max_depth, field_name=child_field_name
+                )
                 children.append(child_ast)
-        
+
         text = None
         if not children:
-            text = node.text.decode('utf-8') if node.text else None
+            text = node.text.decode("utf-8") if node.text else None
 
         return ASTNode(
             type=node.type,
@@ -74,7 +85,7 @@ class BaseAnalyzer(ABC):
             children=children,
             field_name=field_name,
             text=text,
-            id=node.id
+            id=node.id,
         )
 
     @abstractmethod
@@ -108,6 +119,41 @@ class BaseAnalyzer(ABC):
         pass
 
     # Utility helpers for point/range navigation and cursor-style views
+    def get_source_for_range(
+        self, code: str, start_row: int, start_col: int, end_row: int, end_col: int
+    ) -> str:
+        """Extract the source code text for a given line/column range.
+
+        Args:
+            code: Source code as string
+            start_row: Starting line number (0-based)
+            start_col: Starting column number (0-based)
+            end_row: Ending line number (0-based)
+            end_col: Ending column number (0-based)
+
+        Returns:
+            The source code text covering the specified range
+        """
+        lines = code.split("\n")
+
+        if start_row == end_row:
+            if start_row < len(lines):
+                return lines[start_row][start_col:end_col]
+            return ""
+        else:
+            result = []
+            if start_row < len(lines):
+                result.append(lines[start_row][start_col:])
+
+            for i in range(start_row + 1, end_row):
+                if i < len(lines):
+                    result.append(lines[i])
+
+            if end_row < len(lines):
+                result.append(lines[end_row][:end_col])
+
+            return "\n".join(result)
+
     def _field_name_for_child(self, parent: Node, child: Node) -> Optional[str]:
         """Return the field name of a child relative to its parent, if available."""
         for idx, candidate in enumerate(parent.children):
@@ -115,19 +161,33 @@ class BaseAnalyzer(ABC):
                 return parent.field_name_for_child(idx)
         return None
 
-    def build_node_at_point(self, code: str, row: int, column: int, max_depth: int = 0) -> ASTNode:
+    def build_node_at_point(
+        self, code: str, row: int, column: int, max_depth: int = 0
+    ) -> ASTNode:
         """Return the AST node covering a specific point (row, col)."""
         tree = self.parse(code)
         target = tree.root_node.descendant_for_point_range((row, column), (row, column))
         return self._build_ast(target, code, max_depth=max_depth)
 
-    def build_node_for_range(self, code: str, start_row: int, start_col: int, end_row: int, end_col: int, max_depth: int = 0) -> ASTNode:
+    def build_node_for_range(
+        self,
+        code: str,
+        start_row: int,
+        start_col: int,
+        end_row: int,
+        end_col: int,
+        max_depth: int = 0,
+    ) -> ASTNode:
         """Return the smallest AST node covering a point range."""
         tree = self.parse(code)
-        target = tree.root_node.descendant_for_point_range((start_row, start_col), (end_row, end_col))
+        target = tree.root_node.descendant_for_point_range(
+            (start_row, start_col), (end_row, end_col)
+        )
         return self._build_ast(target, code, max_depth=max_depth)
 
-    def build_cursor_view(self, code: str, row: int, column: int, max_depth: int = 1) -> Dict[str, Any]:
+    def build_cursor_view(
+        self, code: str, row: int, column: int, max_depth: int = 1
+    ) -> Dict[str, Any]:
         """Return a compact cursor-style view around the node covering (row, col).
 
         Provides the focused node (limited depth), its ancestors, and nearby siblings.
@@ -140,7 +200,10 @@ class BaseAnalyzer(ABC):
             return {
                 "type": node.type,
                 "field_name": field_name,
-                "start_point": {"row": node.start_point[0], "column": node.start_point[1]},
+                "start_point": {
+                    "row": node.start_point[0],
+                    "column": node.start_point[1],
+                },
                 "end_point": {"row": node.end_point[0], "column": node.end_point[1]},
                 "id": node.id,
             }
@@ -152,7 +215,9 @@ class BaseAnalyzer(ABC):
         parent = target.parent
         child = target
         while parent:
-            ancestors.append(to_summary(parent, parent.parent if parent.parent else None))
+            ancestors.append(
+                to_summary(parent, parent.parent if parent.parent else None)
+            )
             child = parent
             parent = parent.parent
         ancestors.reverse()
@@ -162,14 +227,15 @@ class BaseAnalyzer(ABC):
         next_sibling = target.next_sibling
 
         siblings = {
-            "previous": to_summary(prev_sibling, target.parent) if prev_sibling else None,
+            "previous": to_summary(prev_sibling, target.parent)
+            if prev_sibling
+            else None,
             "next": to_summary(next_sibling, target.parent) if next_sibling else None,
         }
 
         # Direct children (shallow summaries)
         children_summaries = [
-            to_summary(child_node, target)
-            for child_node in target.children
+            to_summary(child_node, target) for child_node in target.children
         ]
 
         return {
@@ -179,29 +245,34 @@ class BaseAnalyzer(ABC):
             "children": children_summaries,
         }
 
-    def run_query(self, query_str: str, root_node: Node, code: str) -> List[Dict[str, Any]]:
+    def run_query(
+        self, query_str: str, root_node: Node, code: str
+    ) -> List[Dict[str, Any]]:
         """Run a custom Tree-sitter S-expression query."""
         from tree_sitter import Query, QueryCursor
+
         language = self.language_manager.get_language(self.get_language_name())
         try:
             query = Query(language, query_str)
             cursor = QueryCursor(query)
             captures = cursor.captures(root_node)
-            
+
             results = []
             for capture_name, nodes in captures.items():
                 for node in nodes:
                     start = Point(row=node.start_point[0], column=node.start_point[1])
                     end = Point(row=node.end_point[0], column=node.end_point[1])
-                    
-                    text_content = node.text.decode('utf-8') if node.text else ""
-                    results.append({
-                        "capture_name": capture_name,
-                        "text": text_content,
-                        "start": start.model_dump(),
-                        "end": end.model_dump(),
-                        "type": node.type
-                    })
+
+                    text_content = node.text.decode("utf-8") if node.text else ""
+                    results.append(
+                        {
+                            "capture_name": capture_name,
+                            "text": text_content,
+                            "start": start.model_dump(),
+                            "end": end.model_dump(),
+                            "type": node.type,
+                        }
+                    )
             return results
         except Exception as e:
             raise ValueError(f"Invalid query: {e}")
