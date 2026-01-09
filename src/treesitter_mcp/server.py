@@ -19,8 +19,6 @@ import orjson
 mcp = FastMCP("tree-sitter-analysis")
 language_manager = LanguageManager()
 
-selected_tools: Optional[set[str]] = None
-
 analyzers = {
     "python": PythonAnalyzer(language_manager),
     "c": CAnalyzer(language_manager),
@@ -109,26 +107,9 @@ def write_output_file(output_file: str, data: Any) -> dict:
         return {"error": f"Failed to write output file: {str(e)}"}
 
 
-def should_register_tool(tool_name: str) -> bool:
-    """Check if a tool should be registered based on --tools selection."""
-    if selected_tools is None:
-        return True
-    return tool_name in selected_tools
+# All tool functions defined below - registration happens in register_tools()
 
 
-def mcp_tool_if_enabled(tool_name: str):
-    """Decorator factory that conditionally applies mcp.tool() based on --tools selection."""
-    if should_register_tool(tool_name):
-        return mcp.tool()
-    else:
-
-        def noop_decorator(func):
-            return func
-
-        return noop_decorator
-
-
-@mcp_tool_if_enabled("treesitter_analyze_file")
 def treesitter_analyze_file(file_path: str, output_file: Optional[str] = None) -> Any:
     """Analyze a source code file and extract symbols (functions, classes, etc.).
 
@@ -173,7 +154,6 @@ def treesitter_analyze_file(file_path: str, output_file: Optional[str] = None) -
         return {"error": f"Error analyzing file: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_get_call_graph")
 def treesitter_get_call_graph(file_path: str, output_file: Optional[str] = None) -> Any:
     """Generate a call graph showing function calls and their relationships.
 
@@ -217,7 +197,6 @@ def treesitter_get_call_graph(file_path: str, output_file: Optional[str] = None)
         return {"error": f"Error generating call graph: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_find_function")
 def treesitter_find_function(
     file_path: str,
     name: str,
@@ -280,7 +259,6 @@ def treesitter_find_function(
         return {"error": f"Error finding function: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_find_variable")
 def treesitter_find_variable(
     file_path: str,
     name: str,
@@ -343,7 +321,6 @@ def treesitter_find_variable(
         return {"error": f"Error finding variable: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_get_supported_languages")
 def treesitter_get_supported_languages(output_file: Optional[str] = None) -> Any:
     """Get a list of programming languages supported by the analyzer.
 
@@ -365,7 +342,6 @@ def treesitter_get_supported_languages(output_file: Optional[str] = None) -> Any
         return []
 
 
-@mcp_tool_if_enabled("treesitter_get_ast")
 def treesitter_get_ast(
     file_path: str, max_depth: int = -1, output_file: Optional[str] = None
 ) -> Any:
@@ -412,7 +388,6 @@ def treesitter_get_ast(
         return {"error": f"Error getting AST: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_get_node_at_point")
 def treesitter_get_node_at_point(
     file_path: str,
     row: int,
@@ -457,7 +432,6 @@ def treesitter_get_node_at_point(
         return {"error": f"Error getting node at point: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_get_node_for_range")
 def treesitter_get_node_for_range(
     file_path: str,
     start_row: int,
@@ -511,7 +485,6 @@ def treesitter_get_node_for_range(
         return {"error": f"Error getting node for range: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_cursor_walk")
 def treesitter_cursor_walk(
     file_path: str,
     row: int,
@@ -555,7 +528,6 @@ def treesitter_cursor_walk(
         return {"error": f"Error walking cursor: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_get_source_for_range")
 def treesitter_get_source_for_range(
     file_path: str,
     start_row: int,
@@ -617,7 +589,6 @@ def treesitter_get_source_for_range(
         return {"error": f"Error getting source for range: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_run_query")
 def treesitter_run_query(
     query: str,
     file_path: str,
@@ -660,7 +631,6 @@ def treesitter_run_query(
         return {"error": f"Error running query: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_find_usage")
 def treesitter_find_usage(
     name: str,
     file_path: str,
@@ -706,7 +676,6 @@ def treesitter_find_usage(
         return {"error": f"Error finding usage: {str(e)}"}
 
 
-@mcp_tool_if_enabled("treesitter_get_dependencies")
 def treesitter_get_dependencies(
     file_path: str, output_file: Optional[str] = None
 ) -> Any:
@@ -746,6 +715,41 @@ def treesitter_get_dependencies(
         return {"error": f"Error getting dependencies: {str(e)}"}
 
 
+# Map of all available tools - used for dynamic registration
+ALL_TOOLS = {
+    "treesitter_analyze_file": treesitter_analyze_file,
+    "treesitter_get_call_graph": treesitter_get_call_graph,
+    "treesitter_find_function": treesitter_find_function,
+    "treesitter_find_variable": treesitter_find_variable,
+    "treesitter_get_supported_languages": treesitter_get_supported_languages,
+    "treesitter_get_ast": treesitter_get_ast,
+    "treesitter_get_node_at_point": treesitter_get_node_at_point,
+    "treesitter_get_node_for_range": treesitter_get_node_for_range,
+    "treesitter_cursor_walk": treesitter_cursor_walk,
+    "treesitter_get_source_for_range": treesitter_get_source_for_range,
+    "treesitter_run_query": treesitter_run_query,
+    "treesitter_find_usage": treesitter_find_usage,
+    "treesitter_get_dependencies": treesitter_get_dependencies,
+}
+
+
+def register_tools(selected_tools: Optional[set[str]] = None) -> int:
+    """Register tools with the MCP server.
+
+    Args:
+        selected_tools: Set of tool names to register. If None, all tools are registered.
+
+    Returns:
+        Number of tools registered.
+    """
+    count = 0
+    for name, func in ALL_TOOLS.items():
+        if selected_tools is None or name in selected_tools:
+            mcp.tool()(func)
+            count += 1
+    return count
+
+
 def main():
     """Main entry point for the MCP server."""
     import argparse
@@ -771,15 +775,37 @@ def main():
         type=str,
         help="Comma-separated list of tools to expose (e.g., treesitter_analyze_file,treesitter_get_ast). If not provided, all tools are exposed.",
     )
+    parser.add_argument(
+        "--list-tools",
+        action="store_true",
+        help="List all available tool names and exit.",
+    )
     args = parser.parse_args()
 
-    global selected_tools
+    if args.list_tools:
+        print("Available tools:")
+        for name in sorted(ALL_TOOLS.keys()):
+            print(f"  {name}")
+        return
+
+    selected_tools = None
     if args.tools:
         selected_tools = set(tool.strip() for tool in args.tools.split(","))
-        print(
-            f"Exposing {len(selected_tools)} selected tools: {', '.join(sorted(selected_tools))}",
-            file=sys.stderr,
-        )
+        # Validate tool names
+        invalid = selected_tools - set(ALL_TOOLS.keys())
+        if invalid:
+            print(
+                f"Error: Unknown tool(s): {', '.join(sorted(invalid))}", file=sys.stderr
+            )
+            print(f"Use --list-tools to see available tools.", file=sys.stderr)
+            sys.exit(1)
+
+    # Register tools after parsing arguments
+    count = register_tools(selected_tools)
+    print(f"Registered {count} tool(s)", file=sys.stderr)
+
+    if selected_tools:
+        print(f"Exposing: {', '.join(sorted(selected_tools))}", file=sys.stderr)
     else:
         print("Exposing all tools", file=sys.stderr)
 
