@@ -1,6 +1,6 @@
 [project]
 name = "treesitter-mcp"
- version = "2.0"
+ version = "2.1"
 description = "MCP server for code analysis using Tree-sitter"
 readme = "README.md"
 requires-python = ">=3.10"
