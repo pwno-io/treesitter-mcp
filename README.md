@@ -1,6 +1,6 @@
-# Tree-sitter MCP Server
+# Tree-sitter MCP Server & CLI
 
-An MCP server that uses Tree-sitter to parse and analyze code.
+An MCP server and CLI that uses Tree-sitter to parse and analyze code.
 
 ## What it does
 
@@ -11,6 +11,7 @@ An MCP server that uses Tree-sitter to parse and analyze code.
 - Run custom Tree-sitter queries
 - List imports/includes
 - Extract source code for specific line/column ranges
+- Use as a standalone CLI or as an MCP server for Claude Desktop
 
 ## Install
 
@@ -19,6 +20,9 @@ Requires Python 3.10+.
 ```bash
 # Install directly
 uv pip install treesitter-mcp
+
+# Or install a specific version
+uv pip install treesitter-mcp==2.1
 
 # Or clone and install
 git clone https://github.com/pwno-io/treesitter-mcp.git
