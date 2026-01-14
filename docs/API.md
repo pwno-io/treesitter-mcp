@@ -10,18 +10,27 @@ All MCP tools accept an optional `output_file` parameter:
 
 ## CLI Arguments
 
-The CLI (`src/treesitter_mcp/cli.py`) supports the following arguments:
+The `ts-cli` command (`src/treesitter_mcp/cli/ts_cli.py`) supports the following arguments:
 
 | Argument | Description | Example |
 | :--- | :--- | :--- |
-| `file` | Path to the file to analyze (Required). | `test.c` |
-| `--ast` | Output the full Abstract Syntax Tree (AST) in JSON. | `--ast` |
+| `file` | Path to the file to analyze (required unless `--supported-languages`). | `test.c` |
+| `--ast` | Output the full Abstract Syntax Tree (AST) in JSON. | `--ast --max-depth 2` |
+| `--call-graph` | Generate a call graph for the file. | `--call-graph` |
 | `--find-function <name>` | Find the definition of a function by name. | `--find-function main` |
 | `--find-variable <name>` | Find the definition and usage of a variable by name. | `--find-variable count` |
 | `--find-usage <name>` | Find all usages (and definitions) of a symbol. | `--find-usage helper` |
 | `--dependencies` | List file dependencies (includes/imports). | `--dependencies` |
-| `--call-graph` | Generate a call graph for the file (C/C++/JavaScript/PHP/Rust/TypeScript/Go/Java). | `--call-graph` |
 | `--query <query>` | Run a custom Tree-sitter S-expression query. | `--query "(identifier) @id"` |
+| `--source-range <start_row start_col end_row end_col>` | Extract source code for a range. | `--source-range 10 0 12 5` |
+| `--node-at-point <row col>` | Get the AST node at a point. | `--node-at-point 5 10` |
+| `--node-for-range <start_row start_col end_row end_col>` | Get the AST node for a range. | `--node-for-range 2 0 4 3` |
+| `--cursor-walk <row col>` | Get a cursor-style view at a point. | `--cursor-walk 4 12` |
+| `--supported-languages` | List supported languages. | `--supported-languages` |
+| `--max-depth <n>` | Limit AST/node/cursor depth. | `--ast --max-depth 2` |
+| `--include-source` | Include source for find-function/variable. | `--find-function main --include-source` |
+| `--language <lang>` | Override language for query/find-usage. | `--query "(identifier) @id" --language javascript` |
+| `--output-file <path>` | Write results to a JSON file. | `--output-file out.json` |
 
 ## MCP Tools
 

@@ -26,6 +26,8 @@ cd treesitter-mcp
 uv pip install -e .
 ```
 
+This installs both `treesitter-mcp` and `ts-cli` entry points.
+
 Or run without installing:
 ```bash
 uvx treesitter-mcp
@@ -40,6 +42,17 @@ treesitter-mcp
 ```
 
 See `docs/MCP_USAGE.md` for how to configure.
+
+### Standalone CLI (ts-cli)
+Run analysis directly from the terminal:
+```bash
+ts-cli path/to/file.py
+ts-cli path/to/file.py --ast --max-depth 2
+ts-cli path/to/file.py --find-function main --include-source
+ts-cli --supported-languages
+```
+
+Use `--output-file` to write results to JSON files instead of stdout.
 
 ### HTTP mode
 For testing or manual use:

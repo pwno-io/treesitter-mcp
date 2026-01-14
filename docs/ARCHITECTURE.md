@@ -25,7 +25,7 @@ The core logic resides in the `BaseAnalyzer` class and its language-specific sub
 -   **`PythonAnalyzer` (`python.py`)**: Implements Python-specific logic (imports).
 
 ### 3. Interfaces
--   **CLI (`src/treesitter_mcp/cli.py`)**: A command-line wrapper around the analyzers.
+-   **CLI (`src/treesitter_mcp/cli/ts_cli.py`)**: A command-line wrapper around the analyzer tools (`ts-cli`).
 -   **MCP Server (`src/treesitter_mcp/server.py`)**: Exposes analyzer functionality as MCP tools.
 
 ## Tree-sitter Versioning
@@ -41,4 +41,4 @@ To add a new language:
 2.  Update `LanguageManager` to load the new language.
 3.  Create a new analyzer class (e.g., `GoAnalyzer`) inheriting from `BaseAnalyzer`.
 4.  Implement abstract methods (`extract_symbols`, `find_usage`, etc.).
-5.  Register the analyzer in `cli.py` and `server.py`.
+5.  Register the analyzer in `server.py` (the CLI uses the same tool functions).

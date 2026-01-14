@@ -54,6 +54,8 @@ dev = [
 [project.scripts]
 # Main entry point - runs MCP server in stdio mode by default
 treesitter-mcp = "treesitter_mcp.cli.__main__:main"
+# Standalone CLI for analysis tools
+ts-cli = "treesitter_mcp.cli.ts_cli:main"
 
 [build-system]
 requires = ["hatchling"]
